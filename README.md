@@ -1,17 +1,27 @@
-# 💫 About Me:
- 🚀 DevOps Engineer automating with Docker, Jenkins, and Tomcat.<br> 💻 Golang enthusiast passionate about clean code.<br> 🛠️ Maven user focused on efficient builds.<br> 🌱 Aspiring Software Developer, always learning and building.<br> 🎯 Innovation and simplicity drive me.
+<div align="center">
+  <img src="./banner.svg" width="100%" alt="Sourav Salampuria — Backend Engineer, Go, PostgreSQL & Cloud-Native Systems" />
+</div>
 
+<p align="center">
+  <sub>
+    <a href="https://sourav-salampuria-portfolio.vercel.app/">Portfolio</a> ·
+    <a href="https://github.com/Sour16o4/tenantguard">tenantguard</a> ·
+    <a href="https://github.com/Sour16o4/gitops-observability-platform">gitops-observability-platform</a> ·
+    <a href="https://github.com/Sour16o4/book-inventory-api">book-inventory-api</a>
+  </sub>
+</p>
 
-## 🌐 Socials:
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white)](https://linkedin.com/in/https://www.linkedin.com/in/sourav-salampuria-b5473b254/) 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api?username=Sour16o4&show_icons=true&hide_border=true&bg_color=170A08&title_color=FFD166&icon_color=FF8C42&text_color=E9CDBC" />
+    <img src="https://github-readme-stats.vercel.app/api?username=Sour16o4&show_icons=true&hide_border=true&bg_color=170A08&title_color=FFD166&icon_color=FF8C42&text_color=E9CDBC" alt="Sourav's GitHub stats" height="165"/>
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=Sour16o4&layout=compact&hide_border=true&bg_color=170A08&title_color=FFD166&text_color=E9CDBC" />
+    <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Sour16o4&layout=compact&hide_border=true&bg_color=170A08&title_color=FFD166&text_color=E9CDBC" alt="Top languages" height="165"/>
+  </picture>
+</p>
 
-# 💻 Tech Stack:
-![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=flat-square&logo=go&logoColor=white) ![Apache Maven](https://img.shields.io/badge/Apache%20Maven-C71A36?style=flat-square&logo=Apache%20Maven&logoColor=white) ![Apache Tomcat](https://img.shields.io/badge/apache%20tomcat-%23F8DC75.svg?style=flat-square&logo=apache-tomcat&logoColor=black) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat-square&logo=docker&logoColor=white) ![Jenkins](https://img.shields.io/badge/jenkins-%232C5263.svg?style=flat-square&logo=jenkins&logoColor=white) ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=flat-square&logo=github&logoColor=white) ![LaTeX](https://img.shields.io/badge/latex-%23008080.svg?style=flat-square&logo=latex&logoColor=white) ![C](https://img.shields.io/badge/c-%2300599C.svg?style=flat-square&logo=c&logoColor=white)
-
-### ✍️ Random Dev Quote
-![](https://quotes-github-readme.vercel.app/api?type=horizontal&theme=tokyonight)
-
----
-[![](https://visitcount.itsvg.in/api?id=sour16o4&icon=2&color=1)](https://visitcount.itsvg.in)
-
-<!-- Proudly created with GPRM ( https://gprm.itsvg.in ) -->
+<p align="center">
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=Sour16o4&background=170A08&border=170A08&stroke=FF8C42&ring=FF8C42&fire=FFD166&currStreakLabel=FFD166&sideLabels=E9CDBC&currStreakNum=FFF6E8&sideNums=FFF6E8&dates=A9876F" alt="GitHub streak"/>
+</p>
