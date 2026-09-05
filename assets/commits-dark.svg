@@ -1,0 +1,56 @@
+<svg width="890" height="309" viewBox="0 0 890 309" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cm-title cm-desc">
+<title id="cm-title">Recent commits</title>
+<desc id="cm-desc">Latest 5 commits across active repositories, with diffstat and relative time.</desc>
+<style>
+text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
+.mono{font-family:ui-monospace, 'SF Mono', Menlo, Consolas, monospace}
+.row-entrance{opacity:1;transform:translateY(0)}
+@media (prefers-reduced-motion: no-preference){
+  .r0{animation:rowIn .6s cubic-bezier(.32,.72,0,1) 0.00s both}
+  .r1{animation:rowIn .6s cubic-bezier(.32,.72,0,1) 0.05s both}
+  .r2{animation:rowIn .6s cubic-bezier(.32,.72,0,1) 0.10s both}
+  .r3{animation:rowIn .6s cubic-bezier(.32,.72,0,1) 0.15s both}
+  .r4{animation:rowIn .6s cubic-bezier(.32,.72,0,1) 0.20s both}
+  @keyframes rowIn{
+    0%{opacity:0;transform:translateY(16px)}
+    100%{opacity:1;transform:translateY(0)}
+  }
+}
+</style>
+<rect width="890" height="309" fill="#0c0c0e"/>
+<rect x="0" y="40.0" width="890" height="252.0" fill="#141417" stroke="#26262b" stroke-width="2"/>
+<g class="row-entrance r0">
+<line x1="0" y1="100.0" x2="890" y2="100.0" stroke="#26262b" stroke-width="1"/>
+<text class="mono" x="16.0" y="82.5" font-size="12" fill="#5cd3a8">a1c9e42</text>
+<text x="94.0" y="82.5" font-size="13" fill="#cdc9c1">fix: catch UPDATE statements missing a tenant_id predicate</text>
+<text class="mono" x="766.0" y="82.5" font-size="11.5" fill="#6d6961" text-anchor="end">+63 -11</text>
+<text class="mono" x="874.0" y="82.5" font-size="11" fill="#6d6961" text-anchor="end">1 day ago</text>
+</g>
+<g class="row-entrance r1">
+<line x1="0" y1="144.0" x2="890" y2="144.0" stroke="#26262b" stroke-width="1"/>
+<text class="mono" x="16.0" y="126.5" font-size="12" fill="#5cd3a8">7f3b201</text>
+<text x="94.0" y="126.5" font-size="13" fill="#cdc9c1">add per-key budget enforcement to the routing layer</text>
+<text class="mono" x="766.0" y="126.5" font-size="11.5" fill="#6d6961" text-anchor="end">+148 -22</text>
+<text class="mono" x="874.0" y="126.5" font-size="11" fill="#6d6961" text-anchor="end">2 days ago</text>
+</g>
+<g class="row-entrance r2">
+<line x1="0" y1="188.0" x2="890" y2="188.0" stroke="#26262b" stroke-width="1"/>
+<text class="mono" x="16.0" y="170.5" font-size="12" fill="#5cd3a8">e88d5a0</text>
+<text x="94.0" y="170.5" font-size="13" fill="#cdc9c1">wire Loki log queries into the Grafana default dashboard</text>
+<text class="mono" x="766.0" y="170.5" font-size="11.5" fill="#6d6961" text-anchor="end">+41 -4</text>
+<text class="mono" x="874.0" y="170.5" font-size="11" fill="#6d6961" text-anchor="end">2 days ago</text>
+</g>
+<g class="row-entrance r3">
+<line x1="0" y1="232.0" x2="890" y2="232.0" stroke="#26262b" stroke-width="1"/>
+<text class="mono" x="16.0" y="214.5" font-size="12" fill="#5cd3a8">2c410f9</text>
+<text x="94.0" y="214.5" font-size="13" fill="#cdc9c1">rewrite the RLS oracle to walk JOINs, not just top-level scans</text>
+<text class="mono" x="766.0" y="214.5" font-size="11.5" fill="#6d6961" text-anchor="end">+210 -87</text>
+<text class="mono" x="874.0" y="214.5" font-size="11" fill="#6d6961" text-anchor="end">5 days ago</text>
+</g>
+<g class="row-entrance r4">
+<text class="mono" x="16.0" y="258.5" font-size="12" fill="#5cd3a8">9b6e77c</text>
+<text x="94.0" y="258.5" font-size="13" fill="#cdc9c1">add optimistic locking to the inventory update handler</text>
+<text class="mono" x="766.0" y="258.5" font-size="11.5" fill="#6d6961" text-anchor="end">+58 -9</text>
+<text class="mono" x="874.0" y="258.5" font-size="11" fill="#6d6961" text-anchor="end">7 days ago</text>
+</g>
+</svg>

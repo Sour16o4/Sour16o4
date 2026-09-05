@@ -1,0 +1,47 @@
+<svg width="890" height="173" viewBox="0 0 890 173" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pr-title pr-desc">
+<title id="pr-title">Shipped</title>
+<desc id="pr-desc">Shipped: 3 project cards.</desc>
+<style>
+text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
+.mono{font-family:ui-monospace, 'SF Mono', Menlo, Consolas, monospace}
+.card-title{font-weight:700;letter-spacing:.02em}
+.card-desc{fill:#cdc9c1}
+.card-shadow{fill:#158f65;transform:translate(4px,4px)}
+.progress-label{fill:#8f8a80}
+.entrance{opacity:1;transform:translate(0,0) scale(1)}
+
+@media (prefers-reduced-motion: no-preference){
+  .entrance{animation:cardIn .72s cubic-bezier(.32,.72,0,1) both}
+  .e0{animation-delay:.16s}
+  .e1{animation-delay:.24s}
+  .e2{animation-delay:.32s}
+  @keyframes cardIn{
+    0%{opacity:0;transform:translate(0,22px) scale(.97)}
+    100%{opacity:1;transform:translate(0,0) scale(1)}
+  }
+}
+</style>
+<rect width="890" height="173" fill="#0c0c0e"/>
+<g class="entrance e0">
+<rect class="card-shadow" x="0.0" y="40.0" width="280.7" height="116.0"/>
+<rect x="0.0" y="40.0" width="280.7" height="116.0" fill="#141417" stroke="#e4e0d8" stroke-width="2"/>
+<text class="card-title" x="18.0" y="69.0" font-size="14" fill="#f0ede6">PAYKIT</text>
+<text class="card-desc" x="18.0" y="98.0" font-size="13">Correctly signed payment webhooks for</text>
+<text class="card-desc" x="18.0" y="116.0" font-size="13">Indian gateways, emitted from your</text>
+<text class="card-desc" x="18.0" y="134.0" font-size="13">terminal.</text>
+</g>
+<g class="entrance e1">
+<rect class="card-shadow" x="304.7" y="40.0" width="280.7" height="116.0"/>
+<rect x="304.7" y="40.0" width="280.7" height="116.0" fill="#141417" stroke="#e4e0d8" stroke-width="2"/>
+<text class="card-title" x="322.7" y="69.0" font-size="14" fill="#f0ede6">GITOPS PLATFORM</text>
+<text class="card-desc" x="322.7" y="98.0" font-size="13">Kubernetes platform on ArgoCD with</text>
+<text class="card-desc" x="322.7" y="116.0" font-size="13">Prometheus and Grafana observability.</text>
+</g>
+<g class="entrance e2">
+<rect class="card-shadow" x="609.3" y="40.0" width="280.7" height="116.0"/>
+<rect x="609.3" y="40.0" width="280.7" height="116.0" fill="#141417" stroke="#e4e0d8" stroke-width="2"/>
+<text class="card-title" x="627.3" y="69.0" font-size="14" fill="#f0ede6">BOOK INVENTORY API</text>
+<text class="card-desc" x="627.3" y="98.0" font-size="13">REST service with layered handlers,</text>
+<text class="card-desc" x="627.3" y="116.0" font-size="13">migrations and a full test suite.</text>
+</g>
+</svg>

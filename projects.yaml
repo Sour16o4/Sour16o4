@@ -1,0 +1,34 @@
+# Hand-maintained project + link data (build spec §7).
+# Progress percentages are the one judgement call in this file — keep them
+# honest, not aspirational.
+# `active: true` -> rendered in "working on now" (needs `progress`).
+# `active: false` -> rendered in "shipped" (progress ignored).
+projects:
+  - name: relay
+    blurb: "One API in front of every LLM provider — routing, failover, per-key budgets."
+    progress: 72
+    active: true
+
+  - name: tenantguard
+    blurb: "Reads your SQL and fails the build when a query forgets its tenant filter."
+    progress: 45
+    active: true
+
+  - name: paykit
+    blurb: "Correctly signed payment webhooks for Indian gateways, emitted from your terminal."
+    active: false
+
+  - name: gitops platform
+    blurb: "Kubernetes platform on ArgoCD with Prometheus and Grafana observability."
+    active: false
+
+  - name: book inventory api
+    blurb: "REST service with layered handlers, migrations and a full test suite."
+    active: false
+
+# Placeholder URLs — swap in the real ones before shipping.
+links:
+  portfolio: "https://example.com"
+  linkedin: "https://linkedin.com/in/example"
+  email: "mailto:you@example.com"
+  resume: "https://example.com/resume.pdf"

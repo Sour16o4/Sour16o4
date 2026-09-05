@@ -1,0 +1,34 @@
+# Placeholder fixture shaped like GitHub's REST /repos/{owner}/{repo}/commits
+# response (trimmed to the fields the renderer needs). Replace with the real
+# API client's output later — the renderer doesn't change.
+commits:
+  - sha: a1c9e42
+    repo: tenantguard
+    message: "fix: catch UPDATE statements missing a tenant_id predicate"
+    additions: 63
+    deletions: 11
+    date: "2026-09-04T14:32:00Z"
+  - sha: 7f3b201
+    repo: relay
+    message: "add per-key budget enforcement to the routing layer"
+    additions: 148
+    deletions: 22
+    date: "2026-09-03T09:05:00Z"
+  - sha: e88d5a0
+    repo: gitops-observability-platform
+    message: "wire Loki log queries into the Grafana default dashboard"
+    additions: 41
+    deletions: 4
+    date: "2026-09-02T19:47:00Z"
+  - sha: 2c410f9
+    repo: tenantguard
+    message: "rewrite the RLS oracle to walk JOINs, not just top-level scans"
+    additions: 210
+    deletions: 87
+    date: "2026-08-31T11:20:00Z"
+  - sha: 9b6e77c
+    repo: book-inventory-api
+    message: "add optimistic locking to the inventory update handler"
+    additions: 58
+    deletions: 9
+    date: "2026-08-29T16:03:00Z"

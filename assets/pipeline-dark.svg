@@ -1,0 +1,115 @@
+<svg width="890" height="170" viewBox="0 0 890 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pl-title pl-desc">
+<title id="pl-title">Delivery pipeline</title>
+<desc id="pl-desc">Five stage pipeline: commit, build, test, deploy, observe, with a packet travelling stage to stage.</desc>
+<style>
+text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
+.mono{font-family:ui-monospace, 'SF Mono', Menlo, Consolas, monospace}
+.stage-name{font-weight:700;letter-spacing:.02em}
+.stage-idx{fill:#6d6961}
+.workbar{opacity:0}
+
+/* base (reduced-motion / no-JS-equivalent) state: stage 1 reads as active,
+   this is the meaningful static frame, not a blank one (§9) */
+.stage-box{fill:#141417;stroke:#e4e0d8;stroke-width:2px}
+.stage-box.s0{fill:#181820;stroke:#158f65}
+.stage-shadow{fill:#158f65;transform:translate(4px,4px)}
+.stage-shadow.s0{transform:translate(9px,9px)}
+.packet-group{transform:translateX(67.64px)}
+
+@media (prefers-reduced-motion: no-preference){
+  .stage-box{animation:stagePulse 12s infinite}
+  .stage-box.s0{animation-delay:0s}
+  .stage-box.s1{animation-delay:2.4s}
+  .stage-box.s2{animation-delay:4.8s}
+  .stage-box.s3{animation-delay:7.2s}
+  .stage-box.s4{animation-delay:9.6s}
+  .stage-shadow{animation:shadowPulse 12s infinite}
+  .stage-shadow.s0{animation-delay:0s}
+  .stage-shadow.s1{animation-delay:2.4s}
+  .stage-shadow.s2{animation-delay:4.8s}
+  .stage-shadow.s3{animation-delay:7.2s}
+  .stage-shadow.s4{animation-delay:9.6s}
+  .workbar{animation:workbarSweep 12s infinite}
+  .workbar.s0{animation-delay:0s}
+  .workbar.s1{animation-delay:2.4s}
+  .workbar.s2{animation-delay:4.8s}
+  .workbar.s3{animation-delay:7.2s}
+  .workbar.s4{animation-delay:9.6s}
+  .packet-group{animation:packetTravel 12s linear infinite}
+  .trail-1{animation-delay:.13s}
+  .trail-2{animation-delay:.26s}
+
+  @keyframes stagePulse{
+    0%{fill:#141417;stroke:#e4e0d8}
+    2%{fill:#181820;stroke:#158f65}
+    10%{fill:#181820;stroke:#158f65}
+    18%{fill:#141417;stroke:#e4e0d8}
+    100%{fill:#141417;stroke:#e4e0d8}
+  }
+  @keyframes shadowPulse{
+    0%{transform:translate(4px,4px)}
+    2%{transform:translate(9px,9px)}
+    10%{transform:translate(9px,9px)}
+    18%{transform:translate(4px,4px)}
+    100%{transform:translate(4px,4px)}
+  }
+  @keyframes workbarSweep{
+    0%{width:0px;opacity:1}
+    10%{width:140px;opacity:1}
+    14%{opacity:0}
+    100%{opacity:0}
+  }
+  @keyframes packetTravel{
+    0%{transform:translateX(67.64px);animation-timing-function:cubic-bezier(0,0,1,1)}
+    10%{transform:translateX(67.64px);animation-timing-function:cubic-bezier(.5,0,.5,1)}
+    20%{transform:translateX(256.32px);animation-timing-function:cubic-bezier(0,0,1,1)}
+    30%{transform:translateX(256.32px);animation-timing-function:cubic-bezier(.5,0,.5,1)}
+    40%{transform:translateX(445.00px);animation-timing-function:cubic-bezier(0,0,1,1)}
+    50%{transform:translateX(445.00px);animation-timing-function:cubic-bezier(.5,0,.5,1)}
+    60%{transform:translateX(633.68px);animation-timing-function:cubic-bezier(0,0,1,1)}
+    70%{transform:translateX(633.68px);animation-timing-function:cubic-bezier(.5,0,.5,1)}
+    80%{transform:translateX(822.36px);animation-timing-function:cubic-bezier(0,0,1,1)}
+    100%{transform:translateX(822.36px)}
+  }
+}
+</style>
+<rect width="890" height="170" fill="#0c0c0e"/>
+<line x1="137.6" y1="108.0" x2="178.3" y2="108.0" stroke="#33333b" stroke-width="2" stroke-dasharray="5,5"/>
+<polygon points="178.3,103.0 186.3,108.0 178.3,113.0" fill="#33333b"/>
+<line x1="326.3" y1="108.0" x2="367.0" y2="108.0" stroke="#33333b" stroke-width="2" stroke-dasharray="5,5"/>
+<polygon points="367.0,103.0 375.0,108.0 367.0,113.0" fill="#33333b"/>
+<line x1="515.0" y1="108.0" x2="555.7" y2="108.0" stroke="#33333b" stroke-width="2" stroke-dasharray="5,5"/>
+<polygon points="555.7,103.0 563.7,108.0 555.7,113.0" fill="#33333b"/>
+<line x1="703.7" y1="108.0" x2="744.4" y2="108.0" stroke="#33333b" stroke-width="2" stroke-dasharray="5,5"/>
+<polygon points="744.4,103.0 752.4,108.0 744.4,113.0" fill="#33333b"/>
+<rect class="stage-shadow s0" x="-2.4" y="40.0" width="140" height="88" fill="#158f65"/>
+<rect class="stage-box s0" x="-2.4" y="40.0" width="140" height="88"/>
+<text class="mono stage-idx" x="11.6" y="64.0" font-size="10.5">01</text>
+<text class="stage-name" x="11.6" y="92.0" font-size="14" fill="#f0ede6">COMMIT</text>
+<rect class="workbar s0" x="-2.4" y="125.0" width="0" height="3" fill="#158f65"/>
+<rect class="stage-shadow s1" x="186.3" y="40.0" width="140" height="88" fill="#158f65"/>
+<rect class="stage-box s1" x="186.3" y="40.0" width="140" height="88"/>
+<text class="mono stage-idx" x="200.3" y="64.0" font-size="10.5">02</text>
+<text class="stage-name" x="200.3" y="92.0" font-size="14" fill="#f0ede6">BUILD</text>
+<rect class="workbar s1" x="186.3" y="125.0" width="0" height="3" fill="#158f65"/>
+<rect class="stage-shadow s2" x="375.0" y="40.0" width="140" height="88" fill="#158f65"/>
+<rect class="stage-box s2" x="375.0" y="40.0" width="140" height="88"/>
+<text class="mono stage-idx" x="389.0" y="64.0" font-size="10.5">03</text>
+<text class="stage-name" x="389.0" y="92.0" font-size="14" fill="#f0ede6">TEST</text>
+<rect class="workbar s2" x="375.0" y="125.0" width="0" height="3" fill="#158f65"/>
+<rect class="stage-shadow s3" x="563.7" y="40.0" width="140" height="88" fill="#158f65"/>
+<rect class="stage-box s3" x="563.7" y="40.0" width="140" height="88"/>
+<text class="mono stage-idx" x="577.7" y="64.0" font-size="10.5">04</text>
+<text class="stage-name" x="577.7" y="92.0" font-size="14" fill="#f0ede6">DEPLOY</text>
+<rect class="workbar s3" x="563.7" y="125.0" width="0" height="3" fill="#158f65"/>
+<rect class="stage-shadow s4" x="752.4" y="40.0" width="140" height="88" fill="#158f65"/>
+<rect class="stage-box s4" x="752.4" y="40.0" width="140" height="88"/>
+<text class="mono stage-idx" x="766.4" y="64.0" font-size="10.5">05</text>
+<text class="stage-name" x="766.4" y="92.0" font-size="14" fill="#f0ede6">OBSERVE</text>
+<rect class="workbar s4" x="752.4" y="125.0" width="0" height="3" fill="#158f65"/>
+<g class="packet-group">
+<rect class="trail-2" x="-2.5" y="105.5" width="5" height="5" fill="#158f65" fill-opacity="0.28" stroke="#0c0c0e" stroke-width="2"/>
+<rect class="trail-1" x="-3.5" y="104.5" width="7" height="7" fill="#158f65" fill-opacity="0.5" stroke="#0c0c0e" stroke-width="2"/>
+<rect x="-5" y="103.0" width="10" height="10" fill="#158f65" stroke="#0c0c0e" stroke-width="2"/>
+</g>
+</svg>
