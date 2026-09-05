@@ -13,12 +13,12 @@ import (
 // Commit mirrors the fields used from GitHub REST's
 // /repos/{owner}/{repo}/commits response.
 type Commit struct {
-	SHA        string `yaml:"sha"`
-	Repo       string `yaml:"repo"`
-	Message    string `yaml:"message"`
-	Additions  int    `yaml:"additions"`
-	Deletions  int    `yaml:"deletions"`
-	Date       string `yaml:"date"` // RFC3339
+	SHA       string `yaml:"sha"`
+	Repo      string `yaml:"repo"`
+	Message   string `yaml:"message"`
+	Additions int    `yaml:"additions"`
+	Deletions int    `yaml:"deletions"`
+	Date      string `yaml:"date"` // RFC3339
 }
 
 type commitsFile struct {

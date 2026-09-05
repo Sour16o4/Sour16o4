@@ -51,7 +51,7 @@ func monoCharPx(size float64) float64 { return size * 0.6 }
 // items 1-2 and §6.3. Motion is CSS keyframes only (no SMIL — the arch
 // strip is why), gated by prefers-reduced-motion with a meaningful static
 // frame: the third typing line shown complete, not a half-typed fragment.
-func Header(t theme.Tokens, name string, subtitle string, lines []TypingLine, useNamePath bool) string {
+func Header(t theme.Tokens, name string, subtitle string, lines []TypingLine) string {
 	headerH := 150.0
 	tickerH := 44.0
 	height := headerH + tickerH
@@ -67,7 +67,7 @@ func Header(t theme.Tokens, name string, subtitle string, lines []TypingLine, us
 	fmt.Fprintf(&b, `<rect width="%.0f" height="%.0f" fill="%s"/>`+"\n", contentW, height, t.Ground)
 
 	writeAvatar(&b, t)
-	writeName(&b, t, name, useNamePath)
+	writeName(&b, t)
 	writeSubtitle(&b, t, subtitle)
 	writeTyping(&b, t, lines, headerH-34)
 
@@ -127,19 +127,15 @@ func writeAvatar(b *strings.Builder, t theme.Tokens) {
 	b.WriteString(`</g>` + "\n")
 }
 
-func writeName(b *strings.Builder, t theme.Tokens, name string, useNamePath bool) {
+// writeName always renders the path-converted glyphs (the font-question
+// decision is settled — see namePathD). riseB (animation transform) sits on
+// the outer g; positioning transform on an inner g — same collision as the
+// avatar shadow, fixed the same way.
+func writeName(b *strings.Builder, t theme.Tokens) {
 	x := headerPad + avatarSize + 24
 	y := headerPad + 32
-	if useNamePath {
-		// riseB (animation transform) on the outer g; positioning transform
-		// on an inner g — same collision as the avatar shadow, fixed the
-		// same way.
-		fmt.Fprintf(b, `<g class="riseB"><g transform="translate(%.1f,%.1f)"><path d="%s" fill="%s"/></g></g>`+"\n",
-			x, y, namePathD, t.Text)
-		return
-	}
-	fmt.Fprintf(b, `<text class="riseB" x="%.1f" y="%.1f" font-size="38" font-weight="700" letter-spacing="-0.04em" fill="%s">%s</text>`+"\n",
-		x, y, t.Text, name)
+	fmt.Fprintf(b, `<g class="riseB"><g transform="translate(%.1f,%.1f)"><path d="%s" fill="%s"/></g></g>`+"\n",
+		x, y, namePathD, t.Text)
 }
 
 func writeSubtitle(b *strings.Builder, t theme.Tokens, subtitle string) {

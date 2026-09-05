@@ -25,10 +25,10 @@ var DefaultChips = []string{
 const chipCharPx = 7.2
 
 const (
-	chipPadX  = 12.0
-	chipPadY  = 5.0
-	chipGap   = 10.0
-	chipRowGap = 10.0
+	chipPadX     = 12.0
+	chipPadY     = 5.0
+	chipGap      = 10.0
+	chipRowGap   = 10.0
 	chipFontSize = 11.5
 )
 
@@ -48,9 +48,9 @@ func Chips(t theme.Tokens, words []string) string {
 	chipH := chipFontSize + 2*chipPadY
 
 	type placed struct {
-		word    string
-		w       float64
-		x, y    float64
+		word string
+		w    float64
+		x, y float64
 	}
 	var rows [][]placed
 	var row []placed

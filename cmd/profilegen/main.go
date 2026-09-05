@@ -1,44 +1,75 @@
 // Command profilegen generates the SVG sections for the Sour16o4 GitHub
-// profile README (see build spec, §8). Build order: tokens → static SVG
-// rendering → animation → data wiring → workflow — this first pass covers
-// the pipeline section end-to-end before the rest.
+// profile README (see build spec, §8).
+//
+// Data source: if GITHUB_TOKEN is set, this pulls live data (repos, commits,
+// contributions) from the GitHub API; otherwise it falls back to the
+// committed YAML fixtures, which is the local-dev default (no token
+// required to iterate on a renderer).
+//
+// Failure behaviour (decided, not defaulted): in live mode, every fetch
+// happens BEFORE any file is written. If anything fails — rate limit, auth,
+// network, an empty response where one isn't expected — the run exits
+// non-zero and touches nothing on disk. The previous run's committed assets
+// stay live and correct, just one day stale, rather than the page silently
+// showing fabricated fixture data or a partially-regenerated, inconsistent
+// asset set. A failed nightly cron is visible in the Actions tab; a silent
+// fallback to placeholder numbers on a public profile is not.
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/Sour16o4/profilegen/internal/activity"
+	ghclient "github.com/Sour16o4/profilegen/internal/github"
 	"github.com/Sour16o4/profilegen/internal/projects"
 	"github.com/Sour16o4/profilegen/internal/render"
 	"github.com/Sour16o4/profilegen/internal/theme"
 )
 
-func main() {
-	outDir := "assets"
-	if err := os.MkdirAll(outDir, 0o755); err != nil {
-		fatal(err)
+const (
+	profileLogin = "Sour16o4"
+	commitLimit  = 5
+)
+
+// output collects every generated file in memory. Nothing touches disk
+// until every data source has succeeded — see the failure-behaviour note
+// above.
+type output struct {
+	files map[string]string
+}
+
+func newOutput() *output { return &output{files: map[string]string{}} }
+
+func (o *output) set(path, content string) { o.files[path] = content }
+
+func (o *output) flush() {
+	for path, content := range o.files {
+		if dir := filepath.Dir(path); dir != "." {
+			if err := os.MkdirAll(dir, 0o755); err != nil {
+				fatal(err)
+			}
+		}
+		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+			fatal(err)
+		}
 	}
+	// Deterministic order for the printed report, not the write itself.
+	for _, path := range sortedKeys(o.files) {
+		fmt.Printf("wrote %s (%d bytes)\n", path, len(o.files[path]))
+	}
+}
 
-	write(filepath.Join(outDir, "pipeline-dark.svg"), render.Pipeline(theme.Dark, render.DefaultStages))
-	write(filepath.Join(outDir, "pipeline-light.svg"), render.Pipeline(theme.Light, render.DefaultStages))
+func main() {
+	ctx := context.Background()
+	out := newOutput()
 
-	write(filepath.Join(outDir, "arch-dark.svg"), render.Architecture(theme.Dark, render.DefaultArch))
-	write(filepath.Join(outDir, "arch-light.svg"), render.Architecture(theme.Light, render.DefaultArch))
-
-	const name = "SOURAV SALAMPURIA"
-	const subtitle = "backend engineer · gurgaon, in · open to roles"
-
-	// Shipped: name converted to paths (the font-question recommendation).
-	write(filepath.Join(outDir, "header-dark.svg"), render.Header(theme.Dark, name, subtitle, render.DefaultTyping, true))
-	write(filepath.Join(outDir, "header-light.svg"), render.Header(theme.Light, name, subtitle, render.DefaultTyping, true))
-
-	// Comparison only, for the font-question review — not referenced by README.
-	write(filepath.Join(outDir, "_compare-header-textname.svg"), render.Header(theme.Dark, name, subtitle, render.DefaultTyping, false))
-
+	commits, weeks := loadActivity(ctx)
 	allProjects, links, err := projects.Load("projects.yaml")
 	if err != nil {
 		fatal(err)
@@ -46,30 +77,80 @@ func main() {
 	active := projects.Active(allProjects)
 	shipped := projects.Shipped(allProjects)
 
-	write(filepath.Join(outDir, "now-dark.svg"), render.Projects(theme.Dark, "Working on now", active, true))
-	write(filepath.Join(outDir, "now-light.svg"), render.Projects(theme.Light, "Working on now", active, true))
-	write(filepath.Join(outDir, "shipped-dark.svg"), render.Projects(theme.Dark, "Shipped", shipped, false))
-	write(filepath.Join(outDir, "shipped-light.svg"), render.Projects(theme.Light, "Shipped", shipped, false))
+	out.set("assets/pipeline-dark.svg", render.Pipeline(theme.Dark, render.DefaultStages))
+	out.set("assets/pipeline-light.svg", render.Pipeline(theme.Light, render.DefaultStages))
 
+	out.set("assets/arch-dark.svg", render.Architecture(theme.Dark, render.DefaultArch))
+	out.set("assets/arch-light.svg", render.Architecture(theme.Light, render.DefaultArch))
+
+	const name = "SOURAV SALAMPURIA"
+	const subtitle = "backend engineer · gurgaon, in · open to roles"
+	out.set("assets/header-dark.svg", render.Header(theme.Dark, name, subtitle, render.DefaultTyping))
+	out.set("assets/header-light.svg", render.Header(theme.Light, name, subtitle, render.DefaultTyping))
+
+	out.set("assets/now-dark.svg", render.Projects(theme.Dark, "Working on now", active, true))
+	out.set("assets/now-light.svg", render.Projects(theme.Light, "Working on now", active, true))
+	out.set("assets/shipped-dark.svg", render.Projects(theme.Dark, "Shipped", shipped, false))
+	out.set("assets/shipped-light.svg", render.Projects(theme.Light, "Shipped", shipped, false))
+
+	now := time.Now()
+	out.set("assets/commits-dark.svg", render.Commits(theme.Dark, commits, now))
+	out.set("assets/commits-light.svg", render.Commits(theme.Light, commits, now))
+
+	out.set("assets/contributions-dark.svg", render.Contributions(theme.Dark, weeks, theme.HeatmapRampDark))
+	out.set("assets/contributions-light.svg", render.Contributions(theme.Light, weeks, theme.HeatmapRampLight))
+
+	out.set("assets/chips-dark.svg", render.Chips(theme.Dark, render.DefaultChips))
+	out.set("assets/chips-light.svg", render.Chips(theme.Light, render.DefaultChips))
+
+	out.set("README.md", buildReadme(links))
+
+	out.flush()
+}
+
+// loadActivity picks live API data (GITHUB_TOKEN set) or the committed
+// fixtures (local dev default), and enforces the failure behaviour: in live
+// mode, any error here must stop the run before main() ever calls out.flush().
+func loadActivity(ctx context.Context) ([]activity.Commit, []activity.ContributionWeek) {
+	client, err := ghclient.NewClient()
+	if err != nil {
+		fmt.Println("GITHUB_TOKEN not set — using committed fixtures (local-dev mode)")
+		return loadFixtures()
+	}
+
+	fmt.Println("GITHUB_TOKEN set — fetching live data")
+	source := activity.FromAPI{Client: client, Login: profileLogin, Limit: commitLimit}
+
+	commits, err := source.Commits(ctx)
+	if err != nil {
+		fatalLive("commits", err)
+	}
+	weeks, err := source.Contributions(ctx)
+	if err != nil {
+		fatalLive("contributions", err)
+	}
+	return commits, weeks
+}
+
+func loadFixtures() ([]activity.Commit, []activity.ContributionWeek) {
 	commits, err := activity.LoadCommits("commits.yaml")
 	if err != nil {
 		fatal(err)
 	}
-	now := time.Now()
-	write(filepath.Join(outDir, "commits-dark.svg"), render.Commits(theme.Dark, commits, now))
-	write(filepath.Join(outDir, "commits-light.svg"), render.Commits(theme.Light, commits, now))
-
 	weeks, err := activity.LoadContributions("contributions.yaml")
 	if err != nil {
 		fatal(err)
 	}
-	write(filepath.Join(outDir, "contributions-dark.svg"), render.Contributions(theme.Dark, weeks, theme.HeatmapRampDark))
-	write(filepath.Join(outDir, "contributions-light.svg"), render.Contributions(theme.Light, weeks, theme.HeatmapRampLight))
+	return commits, weeks
+}
 
-	write(filepath.Join(outDir, "chips-dark.svg"), render.Chips(theme.Dark, render.DefaultChips))
-	write(filepath.Join(outDir, "chips-light.svg"), render.Chips(theme.Light, render.DefaultChips))
-
-	writeReadme(links)
+// fatalLive is the failure-behaviour decision in code: exit before any
+// output file is written or touched. A *github.RateLimitError's Error()
+// text names its own reset time, so CI logs are actionable without any
+// special-casing here.
+func fatalLive(surface string, err error) {
+	fmt.Fprintf(os.Stderr, "profilegen: live %s fetch failed, aborting without writing anything: %v\n", surface, err)
+	os.Exit(1)
 }
 
 // section is one <picture> block in the README: a dark source, a light img
@@ -95,7 +176,7 @@ var sections = []section{
 	{"chips", "Stack: Go, gRPC, GraphQL, REST, Docker, Kubernetes, PostgreSQL, MySQL, Redis, ArgoCD"},
 }
 
-func writeReadme(links projects.Links) {
+func buildReadme(links projects.Links) string {
 	var b strings.Builder
 	for _, s := range sections {
 		fmt.Fprintf(&b, `<picture>
@@ -107,16 +188,16 @@ func writeReadme(links projects.Links) {
 	}
 	fmt.Fprintf(&b, "[portfolio](%s) · [linkedin](%s) · [email](%s) · [resume](%s)\n",
 		links.Portfolio, links.LinkedIn, links.Email, links.Resume)
-
-	write("README.md", b.String())
+	return b.String()
 }
 
-func write(path, content string) {
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
-		fatal(err)
+func sortedKeys(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
 	}
-	info, _ := os.Stat(path)
-	fmt.Printf("wrote %s (%d bytes)\n", path, info.Size())
+	sort.Strings(keys)
+	return keys
 }
 
 func fatal(err error) {

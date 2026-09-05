@@ -1,0 +1,63 @@
+name: Regenerate profile assets
+
+# Nightly: regenerate from live GitHub data, diff against what's committed,
+# open a PR if anything changed. Never pushes to main directly — a human
+# reviews and merges. If profilegen fails (rate limit, auth, bad data), this
+# job fails red and no PR opens; the previous commit's assets stay live
+# unchanged. See cmd/profilegen/main.go's top comment for the full reasoning.
+on:
+  schedule:
+    - cron: "17 3 * * *" # nightly, off-peak minute
+  workflow_dispatch: {} # manual trigger, for testing this workflow itself
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      # PROFILE_PAT must be a personal access token (classic: public_repo or
+      # repo scope; fine-grained: Contents read + Metadata read on the
+      # account's repos), created by the profile owner and stored as a repo
+      # secret. The default secrets.GITHUB_TOKEN is repo-scoped and cannot
+      # call /user/repos or the contributionsCollection GraphQL query for
+      # this account — those need a real user token. If PROFILE_PAT isn't
+      # configured, this step fails clearly rather than silently degrading.
+      - name: Regenerate assets from live data
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROFILE_PAT }}
+        run: go run ./cmd/profilegen
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Uses the default, repo-scoped secrets.GITHUB_TOKEN here — opening a
+      # PR against this same repo is exactly what that token is for, unlike
+      # the /user/repos call above.
+      - name: Open PR with regenerated assets
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Nightly profile data refresh"
+          title: "Nightly profile data refresh"
+          body: |
+            Automated regeneration from live GitHub data (commits, contributions).
+            profilegen only reaches this point if every live fetch succeeded —
+            review the diff, then merge.
+          branch: profilegen/nightly-refresh
+          delete-branch: true

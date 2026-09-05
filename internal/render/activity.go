@@ -13,12 +13,12 @@ import (
 // ---------------------------------------------------------------- commits --
 
 const (
-	logRowH    = 44.0
-	logPad     = 16.0
-	hashColW   = 62.0
-	statColW   = 70.0
-	timeColW   = 92.0
-	colGap     = 16.0
+	logRowH  = 44.0
+	logPad   = 16.0
+	hashColW = 62.0
+	statColW = 70.0
+	timeColW = 92.0
+	colGap   = 16.0
 )
 
 // truncateToWidth is the single-line counterpart of wrapText: cuts s (with a
@@ -247,7 +247,7 @@ func writeContributionsFooter(b *strings.Builder, t theme.Tokens, y float64, s a
 	x += float64(len(sep)) * charW
 	fmt.Fprintf(b, `<text class="mono" x="%.1f" y="%.1f" font-size="%.0f" fill="%s">less</text>`+"\n",
 		x, y, fontSize, t.Dim)
-	x += float64(len("less")) * charW + 8
+	x += float64(len("less"))*charW + 8
 
 	for lvl, color := range ramp {
 		fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="10" height="10" fill="%s"/>`+"\n",

@@ -4,17 +4,17 @@ package theme
 
 // Tokens holds one full palette (light or dark variant).
 type Tokens struct {
-	Ground string // page/SVG background
-	Card   string // card and panel fill
-	CardHi string // card fill, hover/active state
-	Bone   string // card borders, structural rules
-	Text   string // headings, names
-	Body   string // commit messages, body copy
-	Mute   string // labels, metadata, timestamps
-	Dim    string // least important metadata
-	Line   string // section rules, chip borders
-	Rail   string // pipeline rails and arrowheads
-	Accent string // shadows, fills, packet, bars
+	Ground  string // page/SVG background
+	Card    string // card and panel fill
+	CardHi  string // card fill, hover/active state
+	Bone    string // card borders, structural rules
+	Text    string // headings, names
+	Body    string // commit messages, body copy
+	Mute    string // labels, metadata, timestamps
+	Dim     string // least important metadata
+	Line    string // section rules, chip borders
+	Rail    string // pipeline rails and arrowheads
+	Accent  string // shadows, fills, packet, bars
 	Accent2 string // accent for text — links, hashes, values
 	Accent3 string // accent at low emphasis — active track borders
 }
