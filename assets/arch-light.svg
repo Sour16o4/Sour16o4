@@ -63,7 +63,7 @@ text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
 <rect class="p1" x="0" y="104.0" width="8" height="8" fill="none" stroke="#0f6b4a" stroke-width="2"/>
 <rect class="p2" x="0" y="104.0" width="8" height="8" fill="none" stroke="#0f6b4a" stroke-width="2"/>
 </g>
-<text class="mono" x="0.0" y="158.0" font-size="11" fill="#6b675f">
+<text class="mono" x="8.0" y="158.0" font-size="11" fill="#6b675f">
 i own the <tspan fill="#0d7a52">middle two</tspan> &#183; request path <tspan fill="#0d7a52">left to right</tspan> &#183; every row scoped by <tspan fill="#0d7a52">tenant_id</tspan>
 </text>
 </svg>

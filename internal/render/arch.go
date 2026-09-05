@@ -182,8 +182,14 @@ func writeArchTraffic(b *strings.Builder, t theme.Tokens, linkIdx int, x1, x2, y
 }
 
 func writeArchMeta(b *strings.Builder, t theme.Tokens, y float64) {
+	// x=0 (flush against the viewBox edge, no breathing room) was reported
+	// as clipped on the live page — the node boxes can sit flush by design
+	// since a rect's edge is exact, but a glyph's outline can extend
+	// slightly past its nominal x position, and 0 leaves no margin to
+	// absorb that.
+	const metaX = 8.0
 	fmt.Fprintf(b, `<text class="mono" x="%.1f" y="%.1f" font-size="11" fill="%s">`+"\n",
-		0.0, y, t.Mute)
+		metaX, y, t.Mute)
 	fmt.Fprintf(b, `i own the <tspan fill="%s">middle two</tspan> &#183; request path <tspan fill="%s">left to right</tspan> &#183; every row scoped by <tspan fill="%s">tenant_id</tspan>`+"\n",
 		t.Accent2, t.Accent2, t.Accent2)
 	b.WriteString(`</text>` + "\n")

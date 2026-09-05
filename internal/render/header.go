@@ -153,6 +153,15 @@ func writeSubtitle(b *strings.Builder, t theme.Tokens, subtitle string) {
 // take turns on one shared master timeline, so only one is ever visible.
 // The base (non-media) state shows line index 2 fully revealed — the
 // meaningful static / reduced-motion frame the spec requires.
+//
+// Reveal mechanism: CSS clip-path:inset() directly on the (directly
+// rendered) wrapping <g>, NOT width on a <rect> that lives only inside a
+// <clipPath>. Confirmed on the live page that the width-on-clipPath-rect
+// version starts revealing on first paint and then never updates again —
+// elements that exist purely as clip-path geometry (never themselves
+// painted) aren't reliably included in the browser's ongoing animation
+// tick. inset() applied straight to a rendered element doesn't have that
+// problem; verified frame-by-frame that it keeps progressing.
 func writeTyping(b *strings.Builder, t theme.Tokens, lines []TypingLine, y float64) {
 	x := headerPad + avatarSize + 24
 	fontSize := 13.0
@@ -161,22 +170,13 @@ func writeTyping(b *strings.Builder, t theme.Tokens, lines []TypingLine, y float
 	b.WriteString(`<g class="riseC">` + "\n")
 	for i, l := range lines {
 		w := charW * float64(len(l.Text))
-		clipID := fmt.Sprintf("typeclip%d", i)
-		// y=-16 h=22: text sits on the baseline (y=0) and its ascenders
-		// extend upward into negative y — a clip rect starting at y=0
-		// was cutting off nearly the entire glyph, leaving only descender
-		// fragments visible. This was the actual bug behind what looked
-		// like a width/animation problem.
-		fmt.Fprintf(b, `<clipPath id="%s"><rect class="tclip%d" x="0" y="-16" width="%.1f" height="22"/></clipPath>`+"\n",
-			clipID, i, w)
-		visibleWidth := "0px"
+		insetRight := w // static default: fully clipped (hidden)
 		if i == len(lines)-1 {
-			// static/no-animation default: last line shown complete
-			visibleWidth = fmt.Sprintf("%.1fpx", w)
+			insetRight = 0 // last line shown complete
 		}
-		fmt.Fprintf(b, `<style>.tclip%d{width:%s}</style>`+"\n", i, visibleWidth)
-		fmt.Fprintf(b, `<g transform="translate(%.1f,%.1f)" clip-path="url(#%s)"><text class="mono" x="0" y="0" font-size="%.0f" fill="%s">%s</text></g>`+"\n",
-			x, y, clipID, fontSize, t.Accent2, l.Text)
+		fmt.Fprintf(b, `<style>.line%d{clip-path:inset(0 %.1fpx 0 0)}</style>`+"\n", i, insetRight)
+		fmt.Fprintf(b, `<g class="line%d" transform="translate(%.1f,%.1f)"><text class="mono" x="0" y="0" font-size="%.0f" fill="%s">%s</text></g>`+"\n",
+			i, x, y, fontSize, t.Accent2, l.Text)
 	}
 	maxW := 0.0
 	for _, l := range lines {
@@ -234,20 +234,24 @@ func writeTypingKeyframes(b *strings.Builder, lines []TypingLine) {
 		t0 += spans[i]
 	}
 
+	// Same percentage timeline as before, animating clip-path:inset()'s
+	// right offset instead of a clipPath rect's width: 0px = fully
+	// revealed, widthPx = fully hidden (that full width clipped off the
+	// right edge of the text's own box).
 	b.WriteString(`<style>` + "\n@media (prefers-reduced-motion: no-preference){\n")
 	for i, w := range windows {
-		fmt.Fprintf(b, ".tclip%d{animation:typeLine%d %.0fms linear infinite}\n", i, i, total)
+		fmt.Fprintf(b, ".line%d{animation:typeLine%d %.0fms linear infinite}\n", i, i, total)
 		fmt.Fprintf(b, "@keyframes typeLine%d{\n", i)
 		if w.startPct > 0 {
-			fmt.Fprintf(b, "0%%{width:0px}\n%.2f%%{width:0px;animation-timing-function:steps(%d,end)}\n", w.startPct, w.charCount)
+			fmt.Fprintf(b, "0%%{clip-path:inset(0 %.1fpx 0 0)}\n%.2f%%{clip-path:inset(0 %.1fpx 0 0);animation-timing-function:steps(%d,end)}\n", w.widthPx, w.startPct, w.widthPx, w.charCount)
 		} else {
-			fmt.Fprintf(b, "0%%{width:0px;animation-timing-function:steps(%d,end)}\n", w.charCount)
+			fmt.Fprintf(b, "0%%{clip-path:inset(0 %.1fpx 0 0);animation-timing-function:steps(%d,end)}\n", w.widthPx, w.charCount)
 		}
-		fmt.Fprintf(b, "%.2f%%{width:%.1fpx}\n", w.typedPct, w.widthPx)
-		fmt.Fprintf(b, "%.2f%%{width:%.1fpx;animation-timing-function:steps(%d,end)}\n", w.holdEndPct, w.widthPx, w.charCount)
-		fmt.Fprintf(b, "%.2f%%{width:0px}\n", w.deleteEndPct)
+		fmt.Fprintf(b, "%.2f%%{clip-path:inset(0 0px 0 0)}\n", w.typedPct)
+		fmt.Fprintf(b, "%.2f%%{clip-path:inset(0 0px 0 0);animation-timing-function:steps(%d,end)}\n", w.holdEndPct, w.charCount)
+		fmt.Fprintf(b, "%.2f%%{clip-path:inset(0 %.1fpx 0 0)}\n", w.deleteEndPct, w.widthPx)
 		if w.deleteEndPct < 100 {
-			fmt.Fprintf(b, "100%%{width:0px}\n")
+			fmt.Fprintf(b, "100%%{clip-path:inset(0 %.1fpx 0 0)}\n", w.widthPx)
 		}
 		b.WriteString("}\n")
 	}
