@@ -21,10 +21,21 @@ const (
 	colGap   = 16.0
 )
 
+// shortSHA is the display form: 7 hex characters, matching what the hash
+// column was actually sized for (hashColW=62 at 12px mono leaves room for
+// 7 glyphs, not the 40-character full SHA the API returns — rendering the
+// full SHA overlapped straight into the message column).
+func shortSHA(sha string) string {
+	if len(sha) <= 7 {
+		return sha
+	}
+	return sha[:7]
+}
+
 // truncateToWidth is the single-line counterpart of wrapText: cuts s (with a
 // trailing "…") if it would exceed maxWidth at fontSize, generic-stack
-// estimate. The diffstat and hash columns are fixed-width and never
-// truncate — only the message does.
+// estimate. The message is the only column that truncates this way — the
+// hash column uses shortSHA instead (a fixed 7 characters, not a width fit).
 func truncateToWidth(s string, maxWidth, fontSize float64) string {
 	charW := fontSize * charFactor
 	maxChars := int(maxWidth / charW)
@@ -43,7 +54,7 @@ func Commits(t theme.Tokens, commits []activity.Commit, now time.Time) string {
 	panelH := 2*logPad + float64(n)*logRowH
 	height := topPad + panelH + botPad*0.4
 
-	messageW := contentW - 2*logPad - hashColW - statColW - timeColW - 3*colGap
+	messageW := contentW - 2*contentPad - hashColW - statColW - timeColW - 3*colGap
 
 	var b strings.Builder
 	fmt.Fprintf(&b, `<svg width="%.0f" height="%.0f" viewBox="0 0 %.0f %.0f" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cm-title cm-desc">`+"\n",
@@ -75,7 +86,7 @@ text{font-family:` + theme.Fonts.Sans + `}
 @media (prefers-reduced-motion: no-preference){
 `)
 	for i := 0; i < n; i++ {
-		fmt.Fprintf(b, "  .r%d{animation:rowIn .6s cubic-bezier(.32,.72,0,1) %.2fs both}\n", i, float64(i)*0.05)
+		fmt.Fprintf(b, "  .r%d{animation:rowIn .6s cubic-bezier(.32,.72,0,1) %.2fs forwards}\n", i, float64(i)*0.05)
 	}
 	b.WriteString(`  @keyframes rowIn{
     0%{opacity:0;transform:translateY(16px)}
@@ -95,10 +106,10 @@ func writeCommitRow(b *strings.Builder, t theme.Tokens, c activity.Commit, rowY 
 	}
 
 	textY := rowY + logRowH/2 + 4.5
-	x := logPad
+	x := contentPad
 
 	fmt.Fprintf(b, `<text class="mono" x="%.1f" y="%.1f" font-size="12" fill="%s">%s</text>`+"\n",
-		x, textY, t.Accent2, c.SHA)
+		x, textY, t.Accent2, shortSHA(c.SHA))
 	x += hashColW + colGap
 
 	msg := truncateToWidth(c.Message, messageW, 13)
@@ -149,7 +160,8 @@ func heatLevel(count int) int {
 // bucketed per week-column (52 CSS rules) instead of per cell (364) — visually
 // indistinguishable at 3.4ms/cell resolution, and it reproduces the same
 // total ~1.2s sweep (52 * 7 * 3.4ms ≈ 1.24s) for a fraction of the CSS.
-func Contributions(t theme.Tokens, weeks []activity.ContributionWeek, ramp [5]string) string {
+func Contributions(t theme.Tokens, cal activity.ContributionCalendar, ramp [5]string) string {
+	weeks := cal.Weeks
 	gridH := heatRows*(heatCell+heatGap) - heatGap
 	footerH := 30.0
 	height := topPad + gridH + footerH + botPad*0.4
@@ -161,13 +173,13 @@ func Contributions(t theme.Tokens, weeks []activity.ContributionWeek, ramp [5]st
 		contentW, height, contentW, height)
 	b.WriteString(`<title id="ct-title">Contributions</title>` + "\n")
 	fmt.Fprintf(&b, `<desc id="ct-desc">%d contributions in the last year, longest streak %d days, current streak %d days.</desc>`+"\n",
-		streaks.Total, streaks.Longest, streaks.Current)
+		cal.TotalContributions, streaks.Longest, streaks.Current)
 
 	writeContributionsStyle(&b, t, ramp)
 	fmt.Fprintf(&b, `<rect width="%.0f" height="%.0f" fill="%s"/>`+"\n", contentW, height, t.Ground)
 	b.WriteString(`<defs><rect id="cell" width="10" height="10"/></defs>` + "\n")
 
-	gridX := 0.0
+	gridX := contentPad
 	gridY := topPad
 	for week := 0; week < len(weeks) && week < heatCols; week++ {
 		wx := gridX + float64(week)*(heatCell+heatGap)
@@ -182,7 +194,7 @@ func Contributions(t theme.Tokens, weeks []activity.ContributionWeek, ramp [5]st
 		}
 	}
 
-	writeContributionsFooter(&b, t, gridY+gridH+22, streaks, ramp)
+	writeContributionsFooter(&b, t, gridY+gridH+22, cal.TotalContributions, streaks, ramp)
 
 	b.WriteString("</svg>\n")
 	return b.String()
@@ -201,7 +213,7 @@ text{font-family:` + theme.Fonts.Sans + `}
 `)
 	for week := 0; week < heatCols; week++ {
 		delayMs := float64(week) * heatRows * 3.4
-		fmt.Fprintf(b, "  .w%d{animation:cellIn .5s ease-out %.1fms both}\n", week, delayMs)
+		fmt.Fprintf(b, "  .w%d{animation:cellIn .5s ease-out %.1fms forwards}\n", week, delayMs)
 	}
 	b.WriteString(`  @keyframes cellIn{
     0%{opacity:0;transform:scale(.3)}
@@ -212,12 +224,12 @@ text{font-family:` + theme.Fonts.Sans + `}
 `)
 }
 
-func writeContributionsFooter(b *strings.Builder, t theme.Tokens, y float64, s activity.Streaks, ramp [5]string) {
+func writeContributionsFooter(b *strings.Builder, t theme.Tokens, y float64, total int, s activity.Streaks, ramp [5]string) {
 	fontSize := 11.0
 	charW := fontSize * charFactor * 1.2 // mono runs a touch wider than the generic-sans estimate
-	x := 0.0
+	x := contentPad
 
-	line1 := fmt.Sprintf("%d contributions", s.Total)
+	line1 := fmt.Sprintf("%d contributions", total)
 	fmt.Fprintf(b, `<text class="mono" x="%.1f" y="%.1f" font-size="%.0f" fill="%s">%s</text>`+"\n",
 		x, y, fontSize, t.Text, line1)
 	x += float64(len(line1)) * charW

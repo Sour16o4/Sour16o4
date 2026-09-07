@@ -1,6 +1,10 @@
-// Package projects loads the hand-maintained projects.yaml (build spec §7) —
-// the one place progress percentages are a judgement call, not derived data.
-// It also carries the footer's link URLs, kept in the same file per §5 item 10.
+// Package projects loads the hand-maintained projects.yaml — real,
+// checkable repo data only. No project appears here unless it corresponds
+// to a public repo on github.com/Sour16o4 right now; no card carries a
+// number that doesn't trace back to something in this file (which in turn
+// should trace back to the repo itself: language, last push date, status).
+// It also carries the footer's link URLs, kept in the same file per §5
+// item 10.
 package projects
 
 import (
@@ -9,12 +13,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Project is one entry under projects.yaml's `projects:` list.
+// Project is one entry under projects.yaml's `projects:` list. Every field
+// is a fact you can check against the repo, not a judgment call — there is
+// deliberately no "progress percentage" here; a percentage with nothing
+// behind it is exactly what got cut.
 type Project struct {
 	Name     string `yaml:"name"`
-	Blurb    string `yaml:"blurb"`
-	Progress int    `yaml:"progress"` // only meaningful when Active
-	Active   bool   `yaml:"active"`
+	Blurb    string `yaml:"blurb"` // verbatim GitHub description, or an honest note if there isn't one
+	Language string `yaml:"language"`
+	LastPush string `yaml:"last_push"` // YYYY-MM-DD
+	Status   string `yaml:"status"`    // "active" -> working on now, "shipped" -> shipped
+	RepoURL  string `yaml:"repo_url"`
 }
 
 // Links holds the footer's four URLs (§5 item 10). The footer ships as
@@ -46,22 +55,22 @@ func Load(path string) ([]Project, Links, error) {
 	return f.Projects, f.Links, nil
 }
 
-// Active returns entries with active: true — rendered in "working on now".
+// Active returns status: active entries — rendered in "working on now".
 func Active(all []Project) []Project {
 	var out []Project
 	for _, p := range all {
-		if p.Active {
+		if p.Status == "active" {
 			out = append(out, p)
 		}
 	}
 	return out
 }
 
-// Shipped returns entries with active: false — rendered in "shipped".
+// Shipped returns status: shipped entries — rendered in "shipped".
 func Shipped(all []Project) []Project {
 	var out []Project
 	for _, p := range all {
-		if !p.Active {
+		if p.Status == "shipped" {
 			out = append(out, p)
 		}
 	}

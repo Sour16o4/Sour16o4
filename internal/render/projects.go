@@ -45,7 +45,7 @@ const (
 	cardPad    = 18.0
 	statusSize = 10.0
 	descLineH  = 18.0
-	progressH  = 11.0
+	metaH      = 20.0 // height reserved for the language/last-push metadata line
 )
 
 func entranceClass(i int) string {
@@ -53,13 +53,16 @@ func entranceClass(i int) string {
 	return delays[i%len(delays)]
 }
 
-// Projects renders either the "working on now" (active) or "shipped" section,
-// sharing one card component. Only active cards get the status square and
-// progress bar (§5 items 3 & 6).
-func Projects(t theme.Tokens, title string, items []projects.Project, showProgress bool) string {
+// Projects renders either the "working on now" (active) or "shipped"
+// section, sharing one card component. Only active cards get the status
+// square and the language/last-push metadata line (§5 items 3 & 6) — real,
+// checkable facts, not a progress percentage with nothing behind it.
+// n=1 (e.g. "now" with a single active project) naturally spans the full
+// width: cardW = usableW when there's only one item, no special case needed.
+func Projects(t theme.Tokens, title string, items []projects.Project, showMeta bool) string {
 	n := len(items)
 	gap := 24.0
-	cardW := (contentW - float64(n-1)*gap) / float64(n)
+	cardW := (usableW() - float64(n-1)*gap) / float64(n)
 
 	descMaxW := cardW - 2*cardPad
 	type laidOut struct {
@@ -78,11 +81,11 @@ func Projects(t theme.Tokens, title string, items []projects.Project, showProgre
 
 	titleH := 26.0
 	descH := float64(maxLines) * descLineH
-	progressBlockH := 0.0
-	if showProgress {
-		progressBlockH = 16 + progressH + 18
+	metaBlockH := 0.0
+	if showMeta {
+		metaBlockH = 14 + metaH
 	}
-	cardH := cardPad + titleH + descH + progressBlockH + cardPad
+	cardH := cardPad + titleH + descH + metaBlockH + cardPad
 	height := topPad + cardH + botPad*0.4
 
 	var b strings.Builder
@@ -95,8 +98,8 @@ func Projects(t theme.Tokens, title string, items []projects.Project, showProgre
 	fmt.Fprintf(&b, `<rect width="%.0f" height="%.0f" fill="%s"/>`+"\n", contentW, height, t.Ground)
 
 	for i, lo := range laid {
-		x := float64(i) * (cardW + gap)
-		writeCard(&b, t, x, topPad, cardW, cardH, lo.p, lo.lines, showProgress, i)
+		x := contentPad + float64(i)*(cardW+gap)
+		writeCard(&b, t, x, topPad, cardW, cardH, lo.p, lo.lines, showMeta, i)
 	}
 
 	b.WriteString("</svg>\n")
@@ -117,11 +120,11 @@ text{font-family:%s}
 .card-title{font-weight:700;letter-spacing:.02em}
 .card-desc{fill:%s}
 .card-shadow{fill:%s;transform:translate(4px,4px)}
-.progress-label{fill:%s}
+.card-meta{fill:%s}
 .entrance{opacity:1;transform:translate(0,0) scale(1)}
 
 @media (prefers-reduced-motion: no-preference){
-  .entrance{animation:cardIn .72s cubic-bezier(.32,.72,0,1) both}
+  .entrance{animation:cardIn .72s cubic-bezier(.32,.72,0,1) forwards}
   .e0{animation-delay:.16s}
   .e1{animation-delay:.24s}
   .e2{animation-delay:.32s}
@@ -136,7 +139,7 @@ text{font-family:%s}
 	)
 }
 
-func writeCard(b *strings.Builder, t theme.Tokens, x, y, w, h float64, p projects.Project, descLines []string, showProgress bool, idx int) {
+func writeCard(b *strings.Builder, t theme.Tokens, x, y, w, h float64, p projects.Project, descLines []string, showMeta bool, idx int) {
 	cls := entranceClass(idx)
 	fmt.Fprintf(b, `<g class="entrance %s">`+"\n", cls)
 	fmt.Fprintf(b, `<rect class="card-shadow" x="%.1f" y="%.1f" width="%.1f" height="%.1f"/>`+"\n", x, y, w, h)
@@ -144,7 +147,7 @@ func writeCard(b *strings.Builder, t theme.Tokens, x, y, w, h float64, p project
 		x, y, w, h, t.Card, t.Bone)
 
 	titleX := x + cardPad
-	if showProgress {
+	if showMeta {
 		fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="%.0f" height="%.0f" fill="%s"/>`+"\n",
 			titleX, y+cardPad+2, statusSize, statusSize, t.Accent)
 		titleX += statusSize + 10
@@ -158,32 +161,16 @@ func writeCard(b *strings.Builder, t theme.Tokens, x, y, w, h float64, p project
 			x+cardPad, descY+float64(i)*descLineH, line)
 	}
 
-	if showProgress {
-		barY := descY + float64(len(descLines)-1)*descLineH + 22
-		barW := w - 2*cardPad
-		targetW := barW * float64(p.Progress) / 100.0
-		fillClass := fmt.Sprintf("progress-fill-%d", idx)
-		fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="%.1f" height="%.0f" fill="%s" stroke="%s" stroke-width="2"/>`+"\n",
-			x+cardPad, barY, barW, progressH, t.Card, t.Line)
-		// Base (reduced-motion default) width is the target itself — the
-		// spec requires bars at full target width when motion is off, not
-		// a blank track. Every CSS length below carries an explicit unit
-		// (px) — the header's typing-line bug was exactly this omission.
-		fmt.Fprintf(b, `<rect class="%s" x="%.1f" y="%.1f" width="%.1f" height="%.0f" fill="%s"/>`+"\n",
-			fillClass, x+cardPad, barY, targetW, progressH, t.Accent)
-		fmt.Fprintf(b, `<text class="mono progress-label" x="%.1f" y="%.1f" font-size="10.5">%d%%</text>`+"\n",
-			x+cardPad, barY+progressH+16, p.Progress)
-		// Keyframe name is per-card (fillIn0, fillIn1, ...): with different
-		// target widths per card, a single shared "fillIn" name would have
-		// the last card's definition silently win for every card.
-		fmt.Fprintf(b, `<style>
-.%s{width:%.1fpx}
-@media (prefers-reduced-motion: no-preference){
-  .%s{animation:fillIn%d 1.05s cubic-bezier(.32,.72,0,1) .16s both}
-  @keyframes fillIn%d{ 0%%{width:0px} 100%%{width:%.1fpx} }
-}
-</style>
-`, fillClass, targetW, fillClass, idx, idx, targetW)
+	if showMeta {
+		metaY := descY + float64(len(descLines)-1)*descLineH + 24
+		// Real, checkable facts — language and last-push date come straight
+		// from the repo, same fields shown in the verified-repo table this
+		// was built from. No percentage: there was nothing behind the old
+		// one.
+		status := strings.ToUpper(p.Status)
+		meta := fmt.Sprintf("%s · %s · pushed %s", status, p.Language, p.LastPush)
+		fmt.Fprintf(b, `<text class="mono card-meta" x="%.1f" y="%.1f" font-size="11">%s</text>`+"\n",
+			x+cardPad, metaY, meta)
 	}
 
 	b.WriteString(`</g>` + "\n")

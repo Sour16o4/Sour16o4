@@ -1,41 +1,22 @@
-// Package activity loads commit and contribution-calendar fixtures shaped
-// exactly like the real GitHub API responses (build spec §7), so wiring in
-// the real client later is a data-source swap, not a renderer change.
+// Package activity holds the commit and contribution-calendar data shapes
+// and derived stats (relative time, streaks). Data only ever comes from
+// the live GitHub client now (see live.go) — there is deliberately no
+// fixture loader here anymore. The previous fixture path produced fake
+// commit messages and a fake contribution grid that shipped to the live
+// profile; removing it entirely, rather than just not calling it, means
+// there's no code left that could ever silently reintroduce that.
 package activity
 
-import (
-	"os"
-	"time"
+import "time"
 
-	"gopkg.in/yaml.v3"
-)
-
-// Commit mirrors the fields used from GitHub REST's
-// /repos/{owner}/{repo}/commits response.
+// Commit is one entry in the recent-commits log.
 type Commit struct {
-	SHA       string `yaml:"sha"`
-	Repo      string `yaml:"repo"`
-	Message   string `yaml:"message"`
-	Additions int    `yaml:"additions"`
-	Deletions int    `yaml:"deletions"`
-	Date      string `yaml:"date"` // RFC3339
-}
-
-type commitsFile struct {
-	Commits []Commit `yaml:"commits"`
-}
-
-// LoadCommits reads commits.yaml.
-func LoadCommits(path string) ([]Commit, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	var f commitsFile
-	if err := yaml.Unmarshal(data, &f); err != nil {
-		return nil, err
-	}
-	return f.Commits, nil
+	SHA       string
+	Repo      string
+	Message   string
+	Additions int
+	Deletions int
+	Date      string // RFC3339
 }
 
 // RelativeTime formats an RFC3339 timestamp relative to now, GitHub-style.
@@ -94,48 +75,33 @@ func itoa(n int) string {
 // ContributionDay mirrors one entry in GitHub GraphQL's
 // contributionsCollection.contributionCalendar.weeks[].contributionDays.
 type ContributionDay struct {
-	Date              string `yaml:"date"`
-	ContributionCount int    `yaml:"contributionCount"`
+	Date              string
+	ContributionCount int
 }
 
 // ContributionWeek mirrors one weeks[] entry.
 type ContributionWeek struct {
-	ContributionDays []ContributionDay `yaml:"contributionDays"`
+	ContributionDays []ContributionDay
 }
 
-type contributionsFile struct {
-	Weeks []ContributionWeek `yaml:"weeks"`
-}
-
-// LoadContributions reads contributions.yaml.
-func LoadContributions(path string) ([]ContributionWeek, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	var f contributionsFile
-	if err := yaml.Unmarshal(data, &f); err != nil {
-		return nil, err
-	}
-	return f.Weeks, nil
-}
-
-// Streaks holds the three numbers the footer line reports.
+// Streaks holds the two numbers that have to be walked from the raw day
+// array — total contributions comes straight from the API's own
+// totalContributions field instead (see github.ContributionCalendar),
+// not recomputed here, so there's exactly one source of truth for it.
 type Streaks struct {
-	Total   int
 	Longest int
 	Current int
 }
 
 // ComputeStreaks walks the calendar in date order (weeks are already
-// chronological, Sunday-first columns) to total contributions and find the
-// longest streak and the streak still running at the most recent day.
+// chronological, Sunday-first columns) to find the longest streak and the
+// streak still running at the most recent day. Never hardcoded — always
+// derived from whatever day array is passed in.
 func ComputeStreaks(weeks []ContributionWeek) Streaks {
 	var s Streaks
 	running := 0
 	for _, w := range weeks {
 		for _, d := range w.ContributionDays {
-			s.Total += d.ContributionCount
 			if d.ContributionCount > 0 {
 				running++
 				if running > s.Longest {

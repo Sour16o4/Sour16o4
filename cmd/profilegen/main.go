@@ -1,19 +1,17 @@
 // Command profilegen generates the SVG sections for the Sour16o4 GitHub
-// profile README (see build spec, §8).
+// profile README.
 //
-// Data source: if GITHUB_TOKEN is set, this pulls live data (repos, commits,
-// contributions) from the GitHub API; otherwise it falls back to the
-// committed YAML fixtures, which is the local-dev default (no token
-// required to iterate on a renderer).
+// Data source: live only. GITHUB_TOKEN must be set — there is no fixture
+// fallback (removed deliberately; see internal/activity's package comment
+// for why). PROFILE_TOKEN is an optional fallback specifically for the
+// contributions GraphQL query — see internal/github/contributions.go.
 //
-// Failure behaviour (decided, not defaulted): in live mode, every fetch
-// happens BEFORE any file is written. If anything fails — rate limit, auth,
-// network, an empty response where one isn't expected — the run exits
-// non-zero and touches nothing on disk. The previous run's committed assets
-// stay live and correct, just one day stale, rather than the page silently
-// showing fabricated fixture data or a partially-regenerated, inconsistent
-// asset set. A failed nightly cron is visible in the Actions tab; a silent
-// fallback to placeholder numbers on a public profile is not.
+// Failure behaviour: every fetch happens BEFORE any file is written. If
+// anything fails — no token, rate limit, network, an empty response where
+// one isn't expected — the run exits non-zero and touches nothing on disk.
+// The previous run's committed assets stay live and correct, just stale by
+// one refresh cycle, rather than the page silently showing fabricated data
+// or a partially-regenerated, inconsistent asset set.
 package main
 
 import (
@@ -59,7 +57,6 @@ func (o *output) flush() {
 			fatal(err)
 		}
 	}
-	// Deterministic order for the printed report, not the write itself.
 	for _, path := range sortedKeys(o.files) {
 		fmt.Printf("wrote %s (%d bytes)\n", path, len(o.files[path]))
 	}
@@ -69,19 +66,27 @@ func main() {
 	ctx := context.Background()
 	out := newOutput()
 
-	commits, weeks := loadActivity(ctx)
+	client, err := ghclient.NewClient()
+	if err != nil {
+		fatal(fmt.Errorf("no live data source available, refusing to run: %w", err))
+	}
+	source := activity.FromAPI{Client: client, Login: profileLogin, Limit: commitLimit}
+
+	commits, err := source.Commits(ctx)
+	if err != nil {
+		fatalLive("commits", err)
+	}
+	cal, err := source.Contributions(ctx)
+	if err != nil {
+		fatalLive("contributions", err)
+	}
+
 	allProjects, links, err := projects.Load("projects.yaml")
 	if err != nil {
 		fatal(err)
 	}
 	active := projects.Active(allProjects)
 	shipped := projects.Shipped(allProjects)
-
-	out.set("assets/pipeline-dark.svg", render.Pipeline(theme.Dark, render.DefaultStages))
-	out.set("assets/pipeline-light.svg", render.Pipeline(theme.Light, render.DefaultStages))
-
-	out.set("assets/arch-dark.svg", render.Architecture(theme.Dark, render.DefaultArch))
-	out.set("assets/arch-light.svg", render.Architecture(theme.Light, render.DefaultArch))
 
 	const name = "SOURAV SALAMPURIA"
 	const subtitle = "backend engineer · gurgaon, in · open to roles"
@@ -97,51 +102,12 @@ func main() {
 	out.set("assets/commits-dark.svg", render.Commits(theme.Dark, commits, now))
 	out.set("assets/commits-light.svg", render.Commits(theme.Light, commits, now))
 
-	out.set("assets/contributions-dark.svg", render.Contributions(theme.Dark, weeks, theme.HeatmapRampDark))
-	out.set("assets/contributions-light.svg", render.Contributions(theme.Light, weeks, theme.HeatmapRampLight))
+	out.set("assets/contributions-dark.svg", render.Contributions(theme.Dark, cal, theme.HeatmapRampDark))
+	out.set("assets/contributions-light.svg", render.Contributions(theme.Light, cal, theme.HeatmapRampLight))
 
-	out.set("assets/chips-dark.svg", render.Chips(theme.Dark, render.DefaultChips))
-	out.set("assets/chips-light.svg", render.Chips(theme.Light, render.DefaultChips))
-
-	out.set("README.md", buildReadme(links))
+	out.set("README.md", buildReadme(active, shipped, links))
 
 	out.flush()
-}
-
-// loadActivity picks live API data (GITHUB_TOKEN set) or the committed
-// fixtures (local dev default), and enforces the failure behaviour: in live
-// mode, any error here must stop the run before main() ever calls out.flush().
-func loadActivity(ctx context.Context) ([]activity.Commit, []activity.ContributionWeek) {
-	client, err := ghclient.NewClient()
-	if err != nil {
-		fmt.Println("GITHUB_TOKEN not set — using committed fixtures (local-dev mode)")
-		return loadFixtures()
-	}
-
-	fmt.Println("GITHUB_TOKEN set — fetching live data")
-	source := activity.FromAPI{Client: client, Login: profileLogin, Limit: commitLimit}
-
-	commits, err := source.Commits(ctx)
-	if err != nil {
-		fatalLive("commits", err)
-	}
-	weeks, err := source.Contributions(ctx)
-	if err != nil {
-		fatalLive("contributions", err)
-	}
-	return commits, weeks
-}
-
-func loadFixtures() ([]activity.Commit, []activity.ContributionWeek) {
-	commits, err := activity.LoadCommits("commits.yaml")
-	if err != nil {
-		fatal(err)
-	}
-	weeks, err := activity.LoadContributions("contributions.yaml")
-	if err != nil {
-		fatal(err)
-	}
-	return commits, weeks
 }
 
 // fatalLive is the failure-behaviour decision in code: exit before any
@@ -154,41 +120,101 @@ func fatalLive(surface string, err error) {
 }
 
 // section is one <picture> block in the README: a dark source, a light img
-// fallback, and real alt text describing the content (not the filename) —
-// §9's accessibility requirement.
+// fallback, real alt text (screen readers), and a title (the only hover
+// affordance GitHub permits on an <img> — SVGs served this way get no
+// pointer events, so :hover rules are dead code, but the browser's native
+// title tooltip still works). Dropped once already in a regeneration;
+// asserted here explicitly so it can't silently disappear again.
 type section struct {
-	base string
-	alt  string
+	base  string
+	alt   string
+	title string
 }
 
-// Order: header -> pipeline -> arch -> now -> shipped -> commits ->
-// contributions -> chips -> footer. Puts header (194px) + pipeline (170px) +
-// arch (196px) = 560px above the fold, so the two sections nobody else has
-// land first, and land whole rather than getting cut mid-graphic.
-var sections = []section{
-	{"header", "Sourav Salampuria, backend engineer, Gurgaon, India — open to roles"},
-	{"pipeline", "Delivery pipeline: commit, build, test, deploy, observe"},
-	{"arch", "The system I work on: client, gateway, services, and postgres, with gateway and services owned"},
-	{"now", "Working on now: relay and tenantguard, with progress bars"},
-	{"shipped", "Shipped: paykit, gitops observability platform, and book inventory api"},
-	{"commits", "Recent commits across active repositories, with diffstat and relative time"},
-	{"contributions", "Contribution calendar for the last year, with total, longest streak, and current streak"},
-	{"chips", "Stack: Go, gRPC, GraphQL, REST, Docker, Kubernetes, PostgreSQL, MySQL, Redis, ArgoCD"},
+var topSections = []section{
+	{"header", "Sourav Salampuria, backend engineer, Gurgaon, India — open to roles", "Backend engineer — Go, PostgreSQL, Kubernetes. Gurgaon, India. Open to roles."},
+	{"now", "Working on now: tenantguard", "Currently building: tenantguard — multi-tenant SQL isolation analysis."},
+	{"shipped", "Shipped: gitops observability platform and book inventory api", "Delivered projects — click the links below each card to open the repos."},
 }
 
-func buildReadme(links projects.Links) string {
+var activitySections = []section{
+	{"commits", "Recent commits across active repositories, with diffstat and relative time", "Recent commits across active repositories, refreshed automatically."},
+	{"contributions", "Contribution calendar for the last year, with total, longest streak, and current streak", "Contribution calendar for the last twelve months."},
+}
+
+// buildReadme wires a real anchor beneath every project-bearing section —
+// there is no other way to click through from an <img>-rendered SVG (links
+// inside an SVG don't work once GitHub serves it as a plain image). Activity
+// (commits + contributions) is collapsed behind <details> — it's real,
+// auto-refreshed data now, but still secondary to the header/now/shipped
+// sections a first-time visitor should see without an extra click.
+func buildReadme(active, shipped []projects.Project, links projects.Links) string {
 	var b strings.Builder
-	for _, s := range sections {
-		fmt.Fprintf(&b, `<picture>
+	for _, s := range topSections {
+		writeSection(&b, s)
+		switch s.base {
+		case "now":
+			writeProjectLinks(&b, active)
+		case "shipped":
+			writeProjectLinks(&b, shipped)
+		}
+	}
+
+	b.WriteString("<details>\n<summary><b>Activity</b></summary>\n\n")
+	for _, s := range activitySections {
+		writeSection(&b, s)
+	}
+	b.WriteString("</details>\n\n")
+
+	writeFooterLinks(&b, links)
+	return b.String()
+}
+
+func writeSection(b *strings.Builder, s section) {
+	fmt.Fprintf(b, `<picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/%s-dark.svg">
-  <img alt="%s" src="assets/%s-light.svg">
+  <img alt="%s" title="%s" src="assets/%s-light.svg">
 </picture>
 
-`, s.base, s.alt, s.base)
+`, s.base, s.alt, s.title, s.base)
+}
+
+// writeProjectLinks emits one bold link per project, in the same order
+// they're drawn in the section's SVG.
+func writeProjectLinks(b *strings.Builder, items []projects.Project) {
+	if len(items) == 0 {
+		return
 	}
-	fmt.Fprintf(&b, "[portfolio](%s) · [linkedin](%s) · [email](%s) · [resume](%s)\n",
-		links.Portfolio, links.LinkedIn, links.Email, links.Resume)
-	return b.String()
+	var parts []string
+	for _, p := range items {
+		slug := p.RepoURL[strings.LastIndex(p.RepoURL, "/")+1:]
+		parts = append(parts, fmt.Sprintf("[**%s**](%s)", slug, p.RepoURL))
+	}
+	fmt.Fprintln(b, strings.Join(parts, " · "))
+	fmt.Fprintln(b)
+}
+
+// writeFooterLinks only emits a link if it has a real value — an empty
+// field produces no anchor at all, never a broken `[label]()`.
+func writeFooterLinks(b *strings.Builder, links projects.Links) {
+	type link struct{ label, url string }
+	candidates := []link{
+		{"portfolio", links.Portfolio},
+		{"linkedin", links.LinkedIn},
+		{"email", links.Email},
+		{"resume", links.Resume},
+	}
+	var parts []string
+	for _, c := range candidates {
+		if c.url == "" {
+			continue
+		}
+		parts = append(parts, fmt.Sprintf("[%s](%s)", c.label, c.url))
+	}
+	if len(parts) == 0 {
+		return
+	}
+	fmt.Fprintln(b, strings.Join(parts, " · "))
 }
 
 func sortedKeys(m map[string]string) []string {

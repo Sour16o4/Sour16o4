@@ -1,0 +1,52 @@
+name: Refresh activity
+
+# Keeps commits + contributions current without a human running profilegen
+# by hand. `push` only fires for pushes to this repo — the cron is what
+# catches activity in other repos, since nothing else here would trigger a
+# run. GitHub delays scheduled runs under load; treat the 6-hour cadence as
+# approximate, not exact.
+#
+# This is the only place git operations run for this project — Claude Code
+# generates files and reports, it does not commit.
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      # PROFILE_TOKEN is optional — see internal/github/contributions.go for
+      # when it's actually used (GITHUB_TOKEN rejected for the contributions
+      # query specifically). GITHUB_TOKEN here is the default Actions token;
+      # it's enough for the events feed and per-repo commit fallback.
+      - name: Regenerate from live data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROFILE_TOKEN: ${{ secrets.PROFILE_TOKEN }}
+        run: go run ./cmd/profilegen
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/commits-dark.svg assets/commits-light.svg \
+                  assets/contributions-dark.svg assets/contributions-light.svg
+          if git diff --cached --quiet; then
+            echo "no change, skipping commit"
+            exit 0
+          fi
+          git commit -m "Refresh commits and contributions"
+          git push

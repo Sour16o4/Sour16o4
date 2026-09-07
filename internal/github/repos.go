@@ -12,6 +12,7 @@ type Repo struct {
 	FullName string `json:"full_name"`
 	Fork     bool   `json:"fork"`
 	Archived bool   `json:"archived"`
+	Private  bool   `json:"private"`
 	PushedAt string `json:"pushed_at"` // RFC3339
 }
 
@@ -41,12 +42,21 @@ func (c *Client) Repos(ctx context.Context) ([]Repo, error) {
 	return all, nil
 }
 
-// Active filters out forks and archived repos — what "active repos" means
-// for the commits surface.
+// Active filters out forks, archived repos, and private repos — what
+// "active repos" means for the commits surface.
+//
+// Private matters for a reason beyond "don't show what isn't public":
+// Repos() enumerates via /user/repos with an authenticated token, which
+// lists every repo the token's owner can see, private ones included. Without
+// this filter, a private repo's commits could reach the public profile page
+// — a real disclosure risk, not just noise. It also removes fish's 409 at
+// the source: fish is private, invisible to unauthenticated requests
+// (hence 404 from outside, per the earlier investigation), and now never
+// enters the commits pool to fail against in the first place.
 func Active(repos []Repo) []Repo {
 	var out []Repo
 	for _, r := range repos {
-		if !r.Fork && !r.Archived {
+		if !r.Fork && !r.Archived && !r.Private {
 			out = append(out, r)
 		}
 	}

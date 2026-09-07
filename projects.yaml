@@ -1,34 +1,42 @@
-# Hand-maintained project + link data (build spec §7).
-# Progress percentages are the one judgement call in this file — keep them
-# honest, not aspirational.
-# `active: true` -> rendered in "working on now" (needs `progress`).
-# `active: false` -> rendered in "shipped" (progress ignored).
+# Hand-maintained project + link data. Every project here must correspond
+# to a public repo on github.com/Sour16o4 — no placeholders, no aspirational
+# entries. Blurbs are the repo's own GitHub description, verbatim, where one
+# exists; do not paraphrase them into something more impressive.
+#
+# `status: active`  -> rendered in "working on now"
+# `status: shipped` -> rendered in "shipped"
+#
+# Maven-Web-App and Ashen-Ascend are real repos but both are from 2024 with
+# no description set — left off the page rather than shown thin.
+# sourav-salampuria-portfolio is a real repo too, but it's a personal site,
+# not a project card — it's the footer's portfolio link instead.
 projects:
-  - name: relay
-    blurb: "One API in front of every LLM provider — routing, failover, per-key budgets."
-    progress: 72
-    active: true
-
   - name: tenantguard
-    blurb: "Reads your SQL and fails the build when a query forgets its tenant filter."
-    progress: 45
-    active: true
+    blurb: "Proves whether a Go application's SQL respects multi-tenant row isolation, using PostgreSQL RLS as the oracle"
+    language: Go
+    last_push: "2026-09-04"
+    status: active
+    repo_url: "https://github.com/Sour16o4/tenantguard"
 
-  - name: paykit
-    blurb: "Correctly signed payment webhooks for Indian gateways, emitted from your terminal."
-    active: false
-
-  - name: gitops platform
-    blurb: "Kubernetes platform on ArgoCD with Prometheus and Grafana observability."
-    active: false
+  - name: gitops observability platform
+    blurb: "A Kubernetes GitOps and Observability Platform using KIND, ArgoCD, Prometheus, Grafana, and Loki"
+    language: Shell
+    last_push: "2026-05-27"
+    status: shipped
+    repo_url: "https://github.com/Sour16o4/gitops-observability-platform"
 
   - name: book inventory api
-    blurb: "REST service with layered handlers, migrations and a full test suite."
-    active: false
+    blurb: "No description set on GitHub"
+    language: Go
+    last_push: "2025-07-15"
+    status: shipped
+    repo_url: "https://github.com/Sour16o4/book-inventory-api"
 
-# Placeholder URLs — swap in the real ones before shipping.
+# Verified 200 as of the last regeneration (see scripts/verify-github.sh /
+# the profilegen run log). linkedin, email, and resume are deliberately
+# ABSENT: the previous placeholders (linkedin.com/in/example,
+# you@example.com, example.com/resume.pdf) were not real — one 404s
+# outright, the other returns 200 but isn't Sourav's profile — so neither
+# belongs on a live page. Add them back here once real values exist.
 links:
-  portfolio: "https://example.com"
-  linkedin: "https://linkedin.com/in/example"
-  email: "mailto:you@example.com"
-  resume: "https://example.com/resume.pdf"
+  portfolio: "https://sourav-salampuria-portfolio.vercel.app"

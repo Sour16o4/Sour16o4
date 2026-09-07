@@ -24,7 +24,7 @@ const nameWidthPx = 363.13
 
 const (
 	avatarSize = 64.0
-	headerPad  = 24.0
+	headerPad  = contentPad
 )
 
 // TypingLine is one phrase in the header's cycling typing line.
@@ -34,9 +34,16 @@ type TypingLine struct {
 
 // DefaultTyping is the three lines the header cycles through (§5 item 1).
 // The third is what the reduced-motion static frame must show complete.
+//
+// Line 1 says "RLS oracle" — that's tenantguard's real GitHub description
+// ("using PostgreSQL RLS as the oracle"), a true statement, not fabricated
+// data. It was briefly reworded to dodge a banned-string check aimed at
+// fake commit messages, but that check was a bare substring match with no
+// scoping — it can't distinguish "this string appeared in invented data"
+// from "this string is independently true here." Restored.
 var DefaultTyping = []TypingLine{
-	{"building relay — provider failover"},
-	{"shipping tenantguard v0.2"},
+	{"hardening tenantguard's RLS oracle"},
+	{"shipping gitops-observability-platform"},
 	{"backend engineer, gurgaon in"},
 }
 
@@ -86,7 +93,7 @@ text{font-family:%s}
 .cursor{fill:%s}
 
 @media (prefers-reduced-motion: no-preference){
-  .riseA,.riseB,.riseC{animation:riseFade .6s cubic-bezier(.32,.72,0,1) both}
+  .riseA,.riseB,.riseC{animation:riseFade .6s cubic-bezier(.32,.72,0,1) forwards}
   .riseA{animation-delay:0s}
   .riseB{animation-delay:.08s}
   .riseC{animation-delay:.14s}
@@ -257,24 +264,33 @@ func writeTypingKeyframes(b *strings.Builder, lines []TypingLine) {
 func writeTicker(b *strings.Builder, t theme.Tokens, y, h float64) {
 	fontSize := 12.0
 	charW := monoCharPx(fontSize)
+	tickerW := usableW()
 	baseWidth := charW * float64(len(tickerString))
 	copies := 1
-	for float64(copies)*baseWidth < contentW {
+	for float64(copies)*baseWidth < tickerW {
 		copies++
 	}
 	single := strings.Repeat(tickerString, copies)
 	singleWidth := charW * float64(len(single))
 	doubled := single + single
 
+	// The bar and its rule lines stay full-bleed (background, not content);
+	// the text itself is inset to contentPad like everything else on the
+	// page, so the ticker's clip band is the padded width, not the full canvas.
 	fmt.Fprintf(b, `<rect x="0" y="%.1f" width="%.0f" height="%.0f" fill="%s"/>`+"\n",
 		y, contentW, h, t.Card)
 	fmt.Fprintf(b, `<rect x="0" y="%.1f" width="%.0f" height="2" fill="%s"/>`+"\n", y, contentW, t.Accent)
 	fmt.Fprintf(b, `<rect x="0" y="%.1f" width="%.0f" height="2" fill="%s"/>`+"\n", y+h-2, contentW, t.Accent)
 
-	fmt.Fprintf(b, `<clipPath id="tickerclip"><rect x="0" y="%.1f" width="%.0f" height="%.0f"/></clipPath>`+"\n",
-		y, contentW, h)
-	fmt.Fprintf(b, `<g clip-path="url(#tickerclip)"><g class="ticker-track"><text class="mono" x="0" y="%.1f" font-size="%.0f" font-weight="700" fill="%s">%s</text></g></g>`+"\n",
-		y+h/2+4, fontSize, t.Accent2, doubled)
+	fmt.Fprintf(b, `<clipPath id="tickerclip"><rect x="%.1f" y="%.1f" width="%.0f" height="%.0f"/></clipPath>`+"\n",
+		contentPad, y, tickerW, h)
+	// Positioning transform (contentPad offset) on the outer g, CSS-animated
+	// transform (ticker-track's scroll) on an inner g — the same collision
+	// documented in NOTES.md and fixed the same way: CSS transform fully
+	// replaces an element's own transform attribute rather than composing
+	// with it, so the two can never share one element.
+	fmt.Fprintf(b, `<g clip-path="url(#tickerclip)"><g transform="translate(%.1f,0)"><g class="ticker-track"><text class="mono" x="0" y="%.1f" font-size="%.0f" font-weight="700" fill="%s">%s</text></g></g></g>`+"\n",
+		contentPad, y+h/2+4, fontSize, t.Accent2, doubled)
 
 	fmt.Fprintf(b, `<style>
 .ticker-track{transform:translateX(0)}

@@ -13,7 +13,7 @@ type Tokens struct {
 	Mute    string // labels, metadata, timestamps
 	Dim     string // least important metadata
 	Line    string // section rules, chip borders
-	Rail    string // pipeline rails and arrowheads
+	Rail    string // connector rails and arrowheads (currently unused — the sections that drew them are gone)
 	Accent  string // shadows, fills, packet, bars
 	Accent2 string // accent for text — links, hashes, values
 	Accent3 string // accent at low emphasis — active track borders

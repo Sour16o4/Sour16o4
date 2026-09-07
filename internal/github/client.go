@@ -22,9 +22,10 @@ import (
 )
 
 const (
-	restBase    = "https://api.github.com"
-	graphqlURL  = "https://api.github.com/graphql"
-	tokenEnvVar = "GITHUB_TOKEN"
+	restBase            = "https://api.github.com"
+	graphqlURL          = "https://api.github.com/graphql"
+	tokenEnvVar         = "GITHUB_TOKEN"
+	fallbackTokenEnvVar = "PROFILE_TOKEN"
 )
 
 // RateLimitError means the call was rejected for rate limiting, not a real
@@ -38,22 +39,47 @@ func (e *RateLimitError) Error() string {
 	return fmt.Sprintf("rate limited until %s", e.Reset.Format(time.RFC3339))
 }
 
+// HTTPError carries the real status code back to the caller — callers that
+// need to tell "this one repo is empty (409) or gone (404), skip it" apart
+// from "the token is bad (401/403), stop everything" can't do that from a
+// pre-formatted error string. Every non-200, non-rate-limited doREST
+// response returns one of these.
+type HTTPError struct {
+	StatusCode int
+	Status     string
+	Path       string
+	Body       string
+}
+
+func (e *HTTPError) Error() string {
+	return fmt.Sprintf("GET %s: %s: %s", e.Path, e.Status, e.Body)
+}
+
 // Client wraps http.Client with GitHub auth and rate-limit handling.
 type Client struct {
-	http  *http.Client
-	token string
+	http          *http.Client
+	token         string
+	fallbackToken string // PROFILE_TOKEN, optional — see Contributions
 }
 
 // NewClient reads GITHUB_TOKEN from the environment. Returns an error if
 // it's unset — every surface here needs at least read auth to be worth
 // calling (GraphQL requires it outright, and REST's rate limit without it
-// is too thin for a nightly cron across several repos).
+// is too thin for a nightly cron across several repos). PROFILE_TOKEN is
+// optional: a fine-grained PAT with read:user, used only as a fallback if
+// GITHUB_TOKEN is rejected for the contributions GraphQL query specifically
+// (the default Actions token generally can't read another user's — or even
+// its own account's — contribution calendar).
 func NewClient() (*Client, error) {
 	token := os.Getenv(tokenEnvVar)
 	if token == "" {
 		return nil, fmt.Errorf("%s is not set", tokenEnvVar)
 	}
-	return &Client{http: &http.Client{Timeout: 30 * time.Second}, token: token}, nil
+	return &Client{
+		http:          &http.Client{Timeout: 30 * time.Second},
+		token:         token,
+		fallbackToken: os.Getenv(fallbackTokenEnvVar),
+	}, nil
 }
 
 // doREST performs an authenticated REST GET and decodes the JSON body into out.
@@ -77,13 +103,19 @@ func (c *Client) doREST(ctx context.Context, path string, out any) error {
 	}
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("GET %s: %s: %s", path, resp.Status, string(body))
+		return &HTTPError{StatusCode: resp.StatusCode, Status: resp.Status, Path: path, Body: string(body)}
 	}
 	return json.NewDecoder(resp.Body).Decode(out)
 }
 
-// doGraphQL performs an authenticated GraphQL POST.
+// doGraphQL performs an authenticated GraphQL POST using the primary token.
 func (c *Client) doGraphQL(ctx context.Context, query string, variables map[string]any, out any) error {
+	return c.doGraphQLAs(ctx, c.token, query, variables, out)
+}
+
+// doGraphQLAs is doGraphQL with an explicit token — how Contributions falls
+// back to PROFILE_TOKEN without a second code path.
+func (c *Client) doGraphQLAs(ctx context.Context, token, query string, variables map[string]any, out any) error {
 	payload, err := json.Marshal(map[string]any{"query": query, "variables": variables})
 	if err != nil {
 		return err
@@ -92,7 +124,7 @@ func (c *Client) doGraphQL(ctx context.Context, query string, variables map[stri
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(req)
