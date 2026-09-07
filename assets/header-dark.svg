@@ -1,11 +1,11 @@
-<svg width="890" height="180.92" viewBox="0 0 890 180.92" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="hd-title hd-desc">
+<svg width="890" height="194" viewBox="0 0 890 194" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="hd-title hd-desc">
 <title id="hd-title">SOURAV SALAMPURIA</title>
 <desc id="hd-desc">SOURAV SALAMPURIA. backend engineer · gurgaon, in · open to roles.</desc>
 <style>
 text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
 .mono{font-family:ui-monospace, 'SF Mono', Menlo, Consolas, monospace}
 .riseA,.riseB,.riseC{opacity:1;transform:translateY(0)}
-.avatar-shadow{fill:#158f65;transform:translate(3.217px,3.217px)}
+.avatar-shadow{fill:#158f65;transform:translate(3px,3px)}
 .cursor{fill:#5cd3a8}
 
 @media (prefers-reduced-motion: no-preference){
@@ -19,9 +19,9 @@ text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
   }
   .avatar-shadow{animation:avatarBreath 5.5s ease-in-out infinite}
   @keyframes avatarBreath{
-    0%{transform:translate(3.217px,3.217px)}
-    50%{transform:translate(5.361px,5.361px)}
-    100%{transform:translate(3.217px,3.217px)}
+    0%{transform:translate(3px,3px)}
+    50%{transform:translate(5px,5px)}
+    100%{transform:translate(3px,3px)}
   }
   .cursor{animation:cursorBlink 1.05s step-end infinite}
   @keyframes cursorBlink{ 0%,50%{opacity:1} 50.01%,100%{opacity:0} }
@@ -56,9 +56,7 @@ text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
 }
 }
 </style>
-<rect width="890" height="180.92" fill="#0c0c0e"/>
-<g transform="translate(30,0) scale(0.932584)">
-
+<rect width="890" height="194" fill="#0c0c0e"/>
 <g class="riseA">
 <rect class="avatar-shadow" x="24.0" y="24.0" width="64" height="64"/>
 <rect x="24.0" y="24.0" width="64" height="64" fill="#158f65"/>
@@ -87,6 +85,4 @@ text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
 }
 @keyframes tickerScroll{ 0%{transform:translateX(0)} 100%{transform:translateX(-1267.2px)} }
 </style>
-
-</g>
 </svg>

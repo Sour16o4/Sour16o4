@@ -1,4 +1,4 @@
-<svg width="890" height="186.52" viewBox="0 0 890 186.52" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pr-title pr-desc">
+<svg width="890" height="200" viewBox="0 0 890 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pr-title pr-desc">
 <title id="pr-title">Working on now</title>
 <desc id="pr-desc">Working on now: 2 project cards.</desc>
 <style>
@@ -6,7 +6,7 @@ text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
 .mono{font-family:ui-monospace, 'SF Mono', Menlo, Consolas, monospace}
 .card-title{font-weight:700;letter-spacing:.02em}
 .card-desc{fill:#3a3a36}
-.card-shadow{fill:#0f6b4a;transform:translate(4.289px,4.289px)}
+.card-shadow{fill:#0f6b4a;transform:translate(4px,4px)}
 .progress-label{fill:#6b675f}
 .entrance{opacity:1;transform:translate(0,0) scale(1)}
 
@@ -21,17 +21,15 @@ text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
   }
 }
 </style>
-<rect width="890" height="186.52" fill="#faf9f6"/>
-<g transform="translate(30,0) scale(0.932584)">
-
+<rect width="890" height="200" fill="#faf9f6"/>
 <g class="entrance e0">
 <rect class="card-shadow" x="0.0" y="40.0" width="433.0" height="143.0"/>
-<rect x="0.0" y="40.0" width="433.0" height="143.0" fill="#f1f0eb" stroke="#2a2a28" stroke-width="2.145"/>
+<rect x="0.0" y="40.0" width="433.0" height="143.0" fill="#f1f0eb" stroke="#2a2a28" stroke-width="2"/>
 <rect x="18.0" y="60.0" width="10" height="10" fill="#0f6b4a"/>
 <text class="card-title" x="38.0" y="69.0" font-size="14" fill="#141412">RELAY</text>
 <text class="card-desc" x="18.0" y="98.0" font-size="13">One API in front of every LLM provider — routing, failover,</text>
 <text class="card-desc" x="18.0" y="116.0" font-size="13">per-key budgets.</text>
-<rect x="18.0" y="138.0" width="397.0" height="11" fill="#f1f0eb" stroke="#d8d5cc" stroke-width="2.145"/>
+<rect x="18.0" y="138.0" width="397.0" height="11" fill="#f1f0eb" stroke="#d8d5cc" stroke-width="2"/>
 <rect class="progress-fill-0" x="18.0" y="138.0" width="285.8" height="11" fill="#0f6b4a"/>
 <text class="mono progress-label" x="18.0" y="165.0" font-size="10.5">72%</text>
 <style>
@@ -44,12 +42,12 @@ text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
 </g>
 <g class="entrance e1">
 <rect class="card-shadow" x="457.0" y="40.0" width="433.0" height="143.0"/>
-<rect x="457.0" y="40.0" width="433.0" height="143.0" fill="#f1f0eb" stroke="#2a2a28" stroke-width="2.145"/>
+<rect x="457.0" y="40.0" width="433.0" height="143.0" fill="#f1f0eb" stroke="#2a2a28" stroke-width="2"/>
 <rect x="475.0" y="60.0" width="10" height="10" fill="#0f6b4a"/>
 <text class="card-title" x="495.0" y="69.0" font-size="14" fill="#141412">TENANTGUARD</text>
 <text class="card-desc" x="475.0" y="98.0" font-size="13">Reads your SQL and fails the build when a query forgets its</text>
 <text class="card-desc" x="475.0" y="116.0" font-size="13">tenant filter.</text>
-<rect x="475.0" y="138.0" width="397.0" height="11" fill="#f1f0eb" stroke="#d8d5cc" stroke-width="2.145"/>
+<rect x="475.0" y="138.0" width="397.0" height="11" fill="#f1f0eb" stroke="#d8d5cc" stroke-width="2"/>
 <rect class="progress-fill-1" x="475.0" y="138.0" width="178.7" height="11" fill="#0f6b4a"/>
 <text class="mono progress-label" x="475.0" y="165.0" font-size="10.5">45%</text>
 <style>
@@ -59,7 +57,5 @@ text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
   @keyframes fillIn1{ 0%{width:0px} 100%{width:178.7px} }
 }
 </style>
-</g>
-
 </g>
 </svg>
