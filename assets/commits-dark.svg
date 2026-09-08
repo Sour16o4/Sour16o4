@@ -33,7 +33,7 @@ TestVerify…</text>
 <text class="mono" x="30.0" y="126.5" font-size="12" fill="#5cd3a8">eb2e24c</text>
 <text x="108.0" y="126.5" font-size="13" fill="#cdc9c1">Fix stale --help text: ceiling is baselined and enforced</text>
 <text class="mono" x="752.0" y="126.5" font-size="11.5" fill="#6d6961" text-anchor="end">+38 -8</text>
-<text class="mono" x="860.0" y="126.5" font-size="11" fill="#6d6961" text-anchor="end">3 days ago</text>
+<text class="mono" x="860.0" y="126.5" font-size="11" fill="#6d6961" text-anchor="end">4 days ago</text>
 </g>
 <g class="row-entrance r2">
 <line x1="0" y1="188.0" x2="890" y2="188.0" stroke="#26262b" stroke-width="1"/>
@@ -55,6 +55,6 @@ The grid was hard-coded to four columns. …</text>
 <text class="mono" x="30.0" y="258.5" font-size="12" fill="#5cd3a8">de53cf5</text>
 <text x="108.0" y="258.5" font-size="13" fill="#cdc9c1">Update main.go</text>
 <text class="mono" x="752.0" y="258.5" font-size="11.5" fill="#6d6961" text-anchor="end">+1 -1</text>
-<text class="mono" x="860.0" y="258.5" font-size="11" fill="#6d6961" text-anchor="end">13 months ago</text>
+<text class="mono" x="860.0" y="258.5" font-size="11" fill="#6d6961" text-anchor="end">14 months ago</text>
 </g>
 </svg>
