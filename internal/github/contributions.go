@@ -62,18 +62,18 @@ type contributionsResponse struct {
 }
 
 // Contributions fetches the last year's contribution calendar via GraphQL —
-// REST has no equivalent for this data. Tries the primary token
-// (GITHUB_TOKEN) first; if that comes back either rejected OR with an
-// empty/null calendar, and PROFILE_TOKEN is set, retries the identical
-// query with it.
+// REST has no equivalent for this data. Runs the query with effectiveToken
+// (PROFILE_TOKEN when set, otherwise GITHUB_TOKEN) — see client.go. There is
+// no retry with a second token here: PROFILE_TOKEN is already used first
+// whenever it's set, so a GITHUB_TOKEN-only environment retrying against
+// itself would just repeat the identical failure.
 //
-// Both failure shapes are handled deliberately, not just an outright
-// rejection: a repository-scoped Actions token querying a user-scoped field
-// like contributionsCollection is at least as likely to come back a
-// *successful* response with a null/empty field as an auth error — GraphQL
-// doesn't have to reject the request to simply not have the data for that
-// token. Keying the retry on rejection alone would leave that case falling
-// straight through to "zero contributions," which is exactly the kind of
+// An empty calendar is treated as a failure, not a legitimate zero: a
+// repository-scoped Actions token querying a user-scoped field like
+// contributionsCollection is at least as likely to come back a *successful*
+// response with a null/empty field as an auth error — GraphQL doesn't have
+// to reject the request to simply not have the data for that token. Letting
+// that fall through as "zero contributions" would be exactly the kind of
 // fake-looking result this project isn't supposed to produce silently.
 //
 // NOTE on pagination: contributionCalendar.weeks is NOT a paginated
@@ -85,45 +85,13 @@ type contributionsResponse struct {
 func (c *Client) Contributions(ctx context.Context, login string) (ContributionCalendar, error) {
 	variables := map[string]any{"login": login}
 
-	cal, err := c.contributionCalendar(ctx, c.token, login, variables)
-	primaryEmpty := err == nil && len(cal.Weeks) == 0
-
-	if (err != nil || primaryEmpty) && c.fallbackToken != "" {
-		fbCal, fbErr := c.contributionCalendar(ctx, c.fallbackToken, login, variables)
-		switch {
-		case fbErr != nil:
-			return ContributionCalendar{}, fmt.Errorf("GITHUB_TOKEN %s, PROFILE_TOKEN also failed: %w", primaryFailureDesc(err, primaryEmpty), fbErr)
-		case len(fbCal.Weeks) == 0:
-			return ContributionCalendar{}, fmt.Errorf("GITHUB_TOKEN %s, PROFILE_TOKEN returned an empty calendar too", primaryFailureDesc(err, primaryEmpty))
-		default:
-			return fbCal, nil
-		}
-	}
-
-	if err != nil {
-		return ContributionCalendar{}, err
-	}
-	if primaryEmpty {
-		return ContributionCalendar{}, fmt.Errorf("contribution calendar came back empty for %s and no PROFILE_TOKEN is set to retry with", login)
-	}
-	return cal, nil
-}
-
-func primaryFailureDesc(err error, empty bool) string {
-	if empty {
-		return "returned an empty calendar"
-	}
-	return fmt.Sprintf("was rejected (%v)", err)
-}
-
-// contributionCalendar runs the query with a specific token — the one place
-// both Contributions' primary and fallback attempts share, so "does the
-// response actually have data" is checked identically either way.
-func (c *Client) contributionCalendar(ctx context.Context, token, login string, variables map[string]any) (ContributionCalendar, error) {
 	var resp contributionsResponse
-	if err := c.doGraphQLAs(ctx, token, contributionsQuery, variables, &resp); err != nil {
+	if err := c.doGraphQL(ctx, contributionsQuery, variables, &resp); err != nil {
 		return ContributionCalendar{}, err
 	}
 	cal := resp.User.ContributionsCollection.ContributionCalendar
+	if len(cal.Weeks) == 0 {
+		return ContributionCalendar{}, fmt.Errorf("contribution calendar came back empty for %s", login)
+	}
 	return ContributionCalendar{TotalContributions: cal.TotalContributions, Weeks: cal.Weeks}, nil
 }

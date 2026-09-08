@@ -126,7 +126,7 @@ func (c *Client) RecentCommits(ctx context.Context, login string, limit int) ([]
 	if len(commits) > limit {
 		commits = commits[:limit]
 	}
-	if err := c.attachStats(ctx, commits); err != nil {
+	if err := c.attachStats(ctx, commits, login); err != nil {
 		return nil, fmt.Errorf("fetching commit stats: %w", err)
 	}
 	return commits, nil
@@ -193,7 +193,7 @@ func (c *Client) commitsFromEvents(ctx context.Context, login string, limit int)
 // other status is treated the same as 401/403: unexpected enough that
 // continuing past it silently is riskier than stopping.
 func (c *Client) commitsFromRepos(ctx context.Context, login string, limit int) ([]Commit, error) {
-	repos, err := c.Repos(ctx)
+	repos, err := c.Repos(ctx, login)
 	if err != nil {
 		return nil, fmt.Errorf("listing repos: %w", err)
 	}
@@ -266,11 +266,11 @@ func (c *Client) commitsFromRepos(ctx context.Context, login string, limit int) 
 // commit's full "owner/repo" — reconstructed via a fresh repo list rather
 // than threading full names through both call sites above, since this is
 // only ever called once per run on at most `limit` commits.
-func (c *Client) attachStats(ctx context.Context, commits []Commit) error {
+func (c *Client) attachStats(ctx context.Context, commits []Commit, login string) error {
 	if len(commits) == 0 {
 		return nil
 	}
-	repos, err := c.Repos(ctx)
+	repos, err := c.Repos(ctx, login)
 	if err != nil {
 		return fmt.Errorf("listing repos: %w", err)
 	}

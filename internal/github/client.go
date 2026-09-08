@@ -3,10 +3,17 @@
 // internal/projects can swap between this and their fixture loaders without
 // the renderers ever knowing which one is in play.
 //
-// Auth: GITHUB_TOKEN from the environment, never committed. Unauthenticated
-// calls do work for public data on repos/commits/actions (at a much lower
-// rate limit), but the GraphQL contributions query requires a token — GitHub
-// does not serve GraphQL to anonymous callers at all.
+// Auth: GITHUB_TOKEN and/or PROFILE_TOKEN from the environment, never
+// committed. When run from GitHub Actions, GITHUB_TOKEN is a
+// repository-scoped installation token with no authenticated user behind
+// it — the entire /user/* REST family and the GraphQL contributionsCollection
+// field are unavailable to it structurally, not as a permissions setting
+// that could be granted. PROFILE_TOKEN, when set, is a real user token and
+// works everywhere GITHUB_TOKEN does plus everywhere it doesn't, so it is
+// preferred for every call this client makes, not only as a
+// contributions-specific fallback. There is no unauthenticated fallback:
+// every surface here needs at least one of the two tokens to be worth
+// calling.
 package github
 
 import (
@@ -58,18 +65,18 @@ func (e *HTTPError) Error() string {
 // Client wraps http.Client with GitHub auth and rate-limit handling.
 type Client struct {
 	http          *http.Client
-	token         string
-	fallbackToken string // PROFILE_TOKEN, optional — see Contributions
+	token         string // GITHUB_TOKEN
+	fallbackToken string // PROFILE_TOKEN, optional — preferred over token when set; see effectiveToken
 }
 
 // NewClient reads GITHUB_TOKEN from the environment. Returns an error if
 // it's unset — every surface here needs at least read auth to be worth
 // calling (GraphQL requires it outright, and REST's rate limit without it
 // is too thin for a nightly cron across several repos). PROFILE_TOKEN is
-// optional: a fine-grained PAT with read:user, used only as a fallback if
-// GITHUB_TOKEN is rejected for the contributions GraphQL query specifically
-// (the default Actions token generally can't read another user's — or even
-// its own account's — contribution calendar).
+// optional: a fine-grained PAT with read:user. When set, it is used for
+// every call this client makes (see effectiveToken), not only as a
+// contributions-specific fallback — it is a real user token and works
+// against endpoints the default Actions token structurally cannot reach.
 func NewClient() (*Client, error) {
 	token := os.Getenv(tokenEnvVar)
 	if token == "" {
@@ -82,13 +89,26 @@ func NewClient() (*Client, error) {
 	}, nil
 }
 
+// effectiveToken is the token used for every API call. PROFILE_TOKEN, when
+// set, is preferred over GITHUB_TOKEN unconditionally: it's a real
+// user-authenticated token and works against every endpoint this client
+// calls, whereas GITHUB_TOKEN (a repository-scoped Actions installation
+// token when run in CI) does not — the /user/* REST family and the GraphQL
+// contributionsCollection field are unavailable to it structurally.
+func (c *Client) effectiveToken() string {
+	if c.fallbackToken != "" {
+		return c.fallbackToken
+	}
+	return c.token
+}
+
 // doREST performs an authenticated REST GET and decodes the JSON body into out.
 func (c *Client) doREST(ctx context.Context, path string, out any) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, restBase+path, nil)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("Authorization", "Bearer "+c.effectiveToken())
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 
@@ -108,14 +128,8 @@ func (c *Client) doREST(ctx context.Context, path string, out any) error {
 	return json.NewDecoder(resp.Body).Decode(out)
 }
 
-// doGraphQL performs an authenticated GraphQL POST using the primary token.
+// doGraphQL performs an authenticated GraphQL POST using effectiveToken.
 func (c *Client) doGraphQL(ctx context.Context, query string, variables map[string]any, out any) error {
-	return c.doGraphQLAs(ctx, c.token, query, variables, out)
-}
-
-// doGraphQLAs is doGraphQL with an explicit token — how Contributions falls
-// back to PROFILE_TOKEN without a second code path.
-func (c *Client) doGraphQLAs(ctx context.Context, token, query string, variables map[string]any, out any) error {
 	payload, err := json.Marshal(map[string]any{"query": query, "variables": variables})
 	if err != nil {
 		return err
@@ -124,7 +138,7 @@ func (c *Client) doGraphQLAs(ctx context.Context, token, query string, variables
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Authorization", "Bearer "+c.effectiveToken())
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(req)
