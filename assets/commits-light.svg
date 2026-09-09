@@ -33,7 +33,7 @@ TestVerify…</text>
 <text class="mono" x="30.0" y="126.5" font-size="12" fill="#0d7a52">eb2e24c</text>
 <text x="108.0" y="126.5" font-size="13" fill="#3a3a36">Fix stale --help text: ceiling is baselined and enforced</text>
 <text class="mono" x="752.0" y="126.5" font-size="11.5" fill="#8f8b82" text-anchor="end">+38 -8</text>
-<text class="mono" x="860.0" y="126.5" font-size="11" fill="#8f8b82" text-anchor="end">4 days ago</text>
+<text class="mono" x="860.0" y="126.5" font-size="11" fill="#8f8b82" text-anchor="end">5 days ago</text>
 </g>
 <g class="row-entrance r2">
 <line x1="0" y1="188.0" x2="890" y2="188.0" stroke="#d8d5cc" stroke-width="1"/>
