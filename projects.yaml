@@ -6,8 +6,7 @@
 # `status: active`  -> rendered in "working on now"
 # `status: shipped` -> rendered in "shipped"
 #
-# Maven-Web-App and Ashen-Ascend are real repos but both are from 2024 with
-# no description set — left off the page rather than shown thin.
+# Only the repos pinned on the GitHub profile appear here.
 # sourav-salampuria-portfolio is a real repo too, but it's a personal site,
 # not a project card — it's the footer's portfolio link instead.
 projects:
@@ -18,19 +17,26 @@ projects:
     status: active
     repo_url: "https://github.com/Sour16o4/tenantguard"
 
-  - name: gitops observability platform
+  - name: gitops observability
     blurb: "A Kubernetes GitOps and Observability Platform using KIND, ArgoCD, Prometheus, Grafana, and Loki"
     language: Shell
     last_push: "2026-05-27"
     status: shipped
     repo_url: "https://github.com/Sour16o4/gitops-observability-platform"
 
-  - name: book inventory api
-    blurb: "No description set on GitHub"
-    language: Go
-    last_push: "2025-07-15"
+  - name: Skillsight
+    blurb: "Skillsight — a curated link aggregator for frontend, design, and Claude Code resources with an in-app preview viewer, real site thumbnails, and an admin dashboard."
+    language: JavaScript
+    last_push: "2026-09-18"
     status: shipped
-    repo_url: "https://github.com/Sour16o4/book-inventory-api"
+    repo_url: "https://github.com/Sour16o4/Skillsight"
+
+  - name: Velanthe
+    blurb: "Velanthe: a fictional luxury skincare brand with a full shopping flow. It has a filterable catalog, a synced bag and wishlist, guest or account checkout, and 3D product scenes."
+    language: JavaScript
+    last_push: "2026-09-30"
+    status: shipped
+    repo_url: "https://github.com/Sour16o4/Velanthe"
 
 # Verified 200 as of the last regeneration (see scripts/verify-github.sh /
 # the profilegen run log). linkedin, email, and resume are deliberately

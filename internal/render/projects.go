@@ -53,57 +53,45 @@ func entranceClass(i int) string {
 	return delays[i%len(delays)]
 }
 
-// Projects renders either the "working on now" (active) or "shipped"
-// section, sharing one card component. Only active cards get the status
-// square and the language/last-push metadata line (§5 items 3 & 6) — real,
-// checkable facts, not a progress percentage with nothing behind it.
-// n=1 (e.g. "now" with a single active project) naturally spans the full
-// width: cardW = usableW when there's only one item, no special case needed.
-func Projects(t theme.Tokens, title string, items []projects.Project, showMeta bool) string {
+// ProjectCards renders one standalone SVG per project, all the same height,
+// so the README can wrap each in its own link — links inside an SVG don't
+// work once GitHub serves it as an image, but a link around the image does.
+// Cards are sized to sit n-across (contentW/n each). Only active cards get
+// the status square and the language/last-push line.
+func ProjectCards(t theme.Tokens, items []projects.Project, showMeta bool) []string {
 	n := len(items)
-	gap := 24.0
-	cardW := (usableW() - float64(n-1)*gap) / float64(n)
+	svgW := contentW / float64(n)
+	const padL, padR, padT, padB = 10.0, 14.0, 8.0, 14.0
+	cardW := svgW - padL - padR
 
-	descMaxW := cardW - 2*cardPad
-	type laidOut struct {
-		p     projects.Project
-		lines []string
-	}
-	laid := make([]laidOut, n)
+	lines := make([][]string, n)
 	maxLines := 0
 	for i, p := range items {
-		lines := wrapText(p.Blurb, descMaxW, 13)
-		laid[i] = laidOut{p, lines}
-		if len(lines) > maxLines {
-			maxLines = len(lines)
+		lines[i] = wrapText(p.Blurb, cardW-2*cardPad, 13)
+		if len(lines[i]) > maxLines {
+			maxLines = len(lines[i])
 		}
 	}
-
-	titleH := 26.0
-	descH := float64(maxLines) * descLineH
 	metaBlockH := 0.0
 	if showMeta {
 		metaBlockH = 14 + metaH
 	}
-	cardH := cardPad + titleH + descH + metaBlockH + cardPad
-	height := topPad + cardH + botPad*0.4
+	cardH := cardPad + 26 + float64(maxLines)*descLineH + metaBlockH + cardPad
+	height := padT + cardH + padB
 
-	var b strings.Builder
-	fmt.Fprintf(&b, `<svg width="%.0f" height="%.0f" viewBox="0 0 %.0f %.0f" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pr-title pr-desc">`+"\n",
-		contentW, height, contentW, height)
-	fmt.Fprintf(&b, `<title id="pr-title">%s</title>`+"\n", title)
-	fmt.Fprintf(&b, `<desc id="pr-desc">%s: %d project card%s.</desc>`+"\n", title, n, plural(n))
-
-	writeProjectsStyle(&b, t)
-	fmt.Fprintf(&b, `<rect width="%.0f" height="%.0f" fill="%s"/>`+"\n", contentW, height, t.Ground)
-
-	for i, lo := range laid {
-		x := contentPad + float64(i)*(cardW+gap)
-		writeCard(&b, t, x, topPad, cardW, cardH, lo.p, lo.lines, showMeta, i)
+	out := make([]string, n)
+	for i, p := range items {
+		var b strings.Builder
+		fmt.Fprintf(&b, `<svg width="%.0f" height="%.0f" viewBox="0 0 %.0f %.0f" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pr-title">`+"\n",
+			svgW, height, svgW, height)
+		fmt.Fprintf(&b, `<title id="pr-title">%s</title>`+"\n", p.Name)
+		writeProjectsStyle(&b, t)
+		fmt.Fprintf(&b, `<rect width="%.0f" height="%.0f" fill="%s"/>`+"\n", svgW, height, t.Ground)
+		writeCard(&b, t, padL, padT, cardW, cardH, p, lines[i], showMeta, i)
+		b.WriteString("</svg>\n")
+		out[i] = b.String()
 	}
-
-	b.WriteString("</svg>\n")
-	return b.String()
+	return out
 }
 
 func plural(n int) string {

@@ -89,14 +89,23 @@ func main() {
 	shipped := projects.Shipped(allProjects)
 
 	const name = "SOURAV SALAMPURIA"
-	const subtitle = "backend engineer · gurgaon, in · open to roles"
+	const subtitle = "full stack developer · gurgaon, in · open to roles"
 	out.set("assets/header-dark.svg", render.Header(theme.Dark, name, subtitle, render.DefaultTyping))
 	out.set("assets/header-light.svg", render.Header(theme.Light, name, subtitle, render.DefaultTyping))
 
-	out.set("assets/now-dark.svg", render.Projects(theme.Dark, "Working on now", active, true))
-	out.set("assets/now-light.svg", render.Projects(theme.Light, "Working on now", active, true))
-	out.set("assets/shipped-dark.svg", render.Projects(theme.Dark, "Shipped", shipped, false))
-	out.set("assets/shipped-light.svg", render.Projects(theme.Light, "Shipped", shipped, false))
+	for _, g := range []struct {
+		items []projects.Project
+		meta  bool
+	}{{active, true}, {shipped, false}} {
+		for _, th := range []struct {
+			suffix string
+			tokens theme.Tokens
+		}{{"dark", theme.Dark}, {"light", theme.Light}} {
+			for i, svg := range render.ProjectCards(th.tokens, g.items, g.meta) {
+				out.set(fmt.Sprintf("assets/card-%s-%s.svg", slug(g.items[i]), th.suffix), svg)
+			}
+		}
+	}
 
 	now := time.Now()
 	out.set("assets/commits-dark.svg", render.Commits(theme.Dark, commits, now))
@@ -132,9 +141,7 @@ type section struct {
 }
 
 var topSections = []section{
-	{"header", "Sourav Salampuria, backend engineer, Gurgaon, India — open to roles", "Backend engineer — Go, PostgreSQL, Kubernetes. Gurgaon, India. Open to roles."},
-	{"now", "Working on now: tenantguard", "Currently building: tenantguard — multi-tenant SQL isolation analysis."},
-	{"shipped", "Shipped: gitops observability platform and book inventory api", "Delivered projects — click the links below each card to open the repos."},
+	{"header", "Sourav Salampuria, full stack developer, Gurgaon, India — open to roles", "Full stack developer — Go, Next.js, PostgreSQL, Kubernetes. Gurgaon, India. Open to roles."},
 }
 
 var activitySections = []section{
@@ -152,13 +159,9 @@ func buildReadme(active, shipped []projects.Project, links projects.Links) strin
 	var b strings.Builder
 	for _, s := range topSections {
 		writeSection(&b, s)
-		switch s.base {
-		case "now":
-			writeProjectLinks(&b, active)
-		case "shipped":
-			writeProjectLinks(&b, shipped)
-		}
 	}
+	writeCards(&b, active)
+	writeCards(&b, shipped)
 
 	b.WriteString("<details>\n<summary><b>Activity</b></summary>\n\n")
 	for _, s := range activitySections {
@@ -179,19 +182,24 @@ func writeSection(b *strings.Builder, s section) {
 `, s.base, s.alt, s.title, s.base)
 }
 
-// writeProjectLinks emits one bold link per project, in the same order
-// they're drawn in the section's SVG.
-func writeProjectLinks(b *strings.Builder, items []projects.Project) {
-	if len(items) == 0 {
+func slug(p projects.Project) string {
+	return strings.ToLower(p.RepoURL[strings.LastIndex(p.RepoURL, "/")+1:])
+}
+
+// writeCards emits one <a><picture> per project on a single line. Each card
+// is its own image, so each is its own link to the repo; width in percent
+// lets the cards sit side by side and scale with the README column.
+func writeCards(b *strings.Builder, items []projects.Project) {
+	n := len(items)
+	if n == 0 {
 		return
 	}
-	var parts []string
+	w := 100/n - 1
 	for _, p := range items {
-		slug := p.RepoURL[strings.LastIndex(p.RepoURL, "/")+1:]
-		parts = append(parts, fmt.Sprintf("[**%s**](%s)", slug, p.RepoURL))
+		fmt.Fprintf(b, `<a href="%s"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-%s-dark.svg"><img width="%d%%" alt="%s — open the repo" src="assets/card-%s-light.svg"></picture></a>`,
+			p.RepoURL, slug(p), w, p.Name, slug(p))
 	}
-	fmt.Fprintln(b, strings.Join(parts, " · "))
-	fmt.Fprintln(b)
+	b.WriteString("\n\n")
 }
 
 // writeFooterLinks only emits a link if it has a real value — an empty

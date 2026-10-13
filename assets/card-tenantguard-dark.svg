@@ -1,0 +1,32 @@
+<svg width="890" height="136" viewBox="0 0 890 136" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pr-title">
+<title id="pr-title">tenantguard</title>
+<style>
+text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
+.mono{font-family:ui-monospace, 'SF Mono', Menlo, Consolas, monospace}
+.card-title{font-weight:700;letter-spacing:.02em}
+.card-desc{fill:#cdc9c1}
+.card-shadow{fill:#158f65;transform:translate(4px,4px)}
+.card-meta{fill:#8f8a80}
+.entrance{opacity:1;transform:translate(0,0) scale(1)}
+
+@media (prefers-reduced-motion: no-preference){
+  .entrance{animation:cardIn .72s cubic-bezier(.32,.72,0,1) forwards}
+  .e0{animation-delay:.16s}
+  .e1{animation-delay:.24s}
+  .e2{animation-delay:.32s}
+  @keyframes cardIn{
+    0%{opacity:0;transform:translate(0,22px) scale(.97)}
+    100%{opacity:1;transform:translate(0,0) scale(1)}
+  }
+}
+</style>
+<rect width="890" height="136" fill="#0c0c0e"/>
+<g class="entrance e0">
+<rect class="card-shadow" x="10.0" y="8.0" width="866.0" height="114.0"/>
+<rect x="10.0" y="8.0" width="866.0" height="114.0" fill="#141417" stroke="#e4e0d8" stroke-width="2"/>
+<rect x="28.0" y="28.0" width="10" height="10" fill="#158f65"/>
+<text class="card-title" x="48.0" y="37.0" font-size="14" fill="#f0ede6">TENANTGUARD</text>
+<text class="card-desc" x="28.0" y="66.0" font-size="13">Proves whether a Go application's SQL respects multi-tenant row isolation, using PostgreSQL RLS as the oracle</text>
+<text class="mono card-meta" x="28.0" y="90.0" font-size="11">ACTIVE · Go · pushed 2026-09-04</text>
+</g>
+</svg>

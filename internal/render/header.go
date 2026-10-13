@@ -44,10 +44,10 @@ type TypingLine struct {
 var DefaultTyping = []TypingLine{
 	{"hardening tenantguard's RLS oracle"},
 	{"shipping gitops-observability-platform"},
-	{"backend engineer, gurgaon in"},
+	{"full stack developer, gurgaon in"},
 }
 
-const tickerString = "GO — GRPC — KUBERNETES — POSTGRES — ARGOCD — GRAPHQL — DOCKER — REDIS — "
+const tickerString = "GO — JAVASCRIPT — SQL — BASH — NEXT.JS — REACT — TAILWIND — POSTGRES — KUBERNETES — DOCKER — ARGOCD — "
 
 // monoCharPx is a rough JetBrains-Mono advance-width estimate (0.6em) used
 // only to size CSS clip rects — approximate is fine, it never has to be

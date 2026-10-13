@@ -1,0 +1,34 @@
+<svg width="297" height="192" viewBox="0 0 297 192" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pr-title">
+<title id="pr-title">Skillsight</title>
+<style>
+text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
+.mono{font-family:ui-monospace, 'SF Mono', Menlo, Consolas, monospace}
+.card-title{font-weight:700;letter-spacing:.02em}
+.card-desc{fill:#3a3a36}
+.card-shadow{fill:#0f6b4a;transform:translate(4px,4px)}
+.card-meta{fill:#6b675f}
+.entrance{opacity:1;transform:translate(0,0) scale(1)}
+
+@media (prefers-reduced-motion: no-preference){
+  .entrance{animation:cardIn .72s cubic-bezier(.32,.72,0,1) forwards}
+  .e0{animation-delay:.16s}
+  .e1{animation-delay:.24s}
+  .e2{animation-delay:.32s}
+  @keyframes cardIn{
+    0%{opacity:0;transform:translate(0,22px) scale(.97)}
+    100%{opacity:1;transform:translate(0,0) scale(1)}
+  }
+}
+</style>
+<rect width="297" height="192" fill="#faf9f6"/>
+<g class="entrance e1">
+<rect class="card-shadow" x="10.0" y="8.0" width="272.7" height="170.0"/>
+<rect x="10.0" y="8.0" width="272.7" height="170.0" fill="#f1f0eb" stroke="#2a2a28" stroke-width="2"/>
+<text class="card-title" x="28.0" y="37.0" font-size="14" fill="#141412">SKILLSIGHT</text>
+<text class="card-desc" x="28.0" y="66.0" font-size="13">Skillsight — a curated link</text>
+<text class="card-desc" x="28.0" y="84.0" font-size="13">aggregator for frontend, design, and</text>
+<text class="card-desc" x="28.0" y="102.0" font-size="13">Claude Code resources with an in-app</text>
+<text class="card-desc" x="28.0" y="120.0" font-size="13">preview viewer, real site</text>
+<text class="card-desc" x="28.0" y="138.0" font-size="13">thumbnails, and an admin dashboard.</text>
+</g>
+</svg>

@@ -1,21 +1,11 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/header-dark.svg">
-  <img alt="Sourav Salampuria, backend engineer, Gurgaon, India — open to roles" title="Backend engineer — Go, PostgreSQL, Kubernetes. Gurgaon, India. Open to roles." src="assets/header-light.svg">
+  <img alt="Sourav Salampuria, full stack developer, Gurgaon, India — open to roles" title="Full stack developer — Go, Next.js, PostgreSQL, Kubernetes. Gurgaon, India. Open to roles." src="assets/header-light.svg">
 </picture>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/now-dark.svg">
-  <img alt="Working on now: tenantguard" title="Currently building: tenantguard — multi-tenant SQL isolation analysis." src="assets/now-light.svg">
-</picture>
+<a href="https://github.com/Sour16o4/tenantguard"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-tenantguard-dark.svg"><img width="99%" alt="tenantguard — open the repo" src="assets/card-tenantguard-light.svg"></picture></a>
 
-[**tenantguard**](https://github.com/Sour16o4/tenantguard)
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/shipped-dark.svg">
-  <img alt="Shipped: gitops observability platform and book inventory api" title="Delivered projects — click the links below each card to open the repos." src="assets/shipped-light.svg">
-</picture>
-
-[**gitops-observability-platform**](https://github.com/Sour16o4/gitops-observability-platform) · [**book-inventory-api**](https://github.com/Sour16o4/book-inventory-api)
+<a href="https://github.com/Sour16o4/gitops-observability-platform"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-gitops-observability-platform-dark.svg"><img width="32%" alt="gitops observability — open the repo" src="assets/card-gitops-observability-platform-light.svg"></picture></a><a href="https://github.com/Sour16o4/Skillsight"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-skillsight-dark.svg"><img width="32%" alt="Skillsight — open the repo" src="assets/card-skillsight-light.svg"></picture></a><a href="https://github.com/Sour16o4/Velanthe"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-velanthe-dark.svg"><img width="32%" alt="Velanthe — open the repo" src="assets/card-velanthe-light.svg"></picture></a>
 
 <details>
 <summary><b>Activity</b></summary>
