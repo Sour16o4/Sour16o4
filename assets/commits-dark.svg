@@ -21,17 +21,17 @@ text{font-family:system-ui, -apple-system, 'Segoe UI', sans-serif}
 <rect x="0" y="40.0" width="890" height="252.0" fill="#141417" stroke="#26262b" stroke-width="2"/>
 <g class="row-entrance r0">
 <line x1="0" y1="100.0" x2="890" y2="100.0" stroke="#26262b" stroke-width="1"/>
-<text class="mono" x="30.0" y="82.5" font-size="12" fill="#5cd3a8">b9dfe74</text>
-<text x="108.0" y="82.5" font-size="13" fill="#cdc9c1">fix(developments): realign detail section titles after padding change</text>
-<text class="mono" x="752.0" y="82.5" font-size="11.5" fill="#6d6961" text-anchor="end">+2 -2</text>
-<text class="mono" x="860.0" y="82.5" font-size="11" fill="#6d6961" text-anchor="end">27 minutes ago</text>
+<text class="mono" x="30.0" y="82.5" font-size="12" fill="#5cd3a8">dc4efec</text>
+<text x="108.0" y="82.5" font-size="13" fill="#cdc9c1">fix(ui): match status badge text colour with design</text>
+<text class="mono" x="752.0" y="82.5" font-size="11.5" fill="#6d6961" text-anchor="end">+1 -1</text>
+<text class="mono" x="860.0" y="82.5" font-size="11" fill="#6d6961" text-anchor="end">9 minutes ago</text>
 </g>
 <g class="row-entrance r1">
 <line x1="0" y1="144.0" x2="890" y2="144.0" stroke="#26262b" stroke-width="1"/>
-<text class="mono" x="30.0" y="126.5" font-size="12" fill="#5cd3a8">5ed0597</text>
-<text x="108.0" y="126.5" font-size="13" fill="#cdc9c1">feat(buildings): add building detail pages</text>
-<text class="mono" x="752.0" y="126.5" font-size="11.5" fill="#6d6961" text-anchor="end">+230 -20</text>
-<text class="mono" x="860.0" y="126.5" font-size="11" fill="#6d6961" text-anchor="end">27 minutes ago</text>
+<text class="mono" x="30.0" y="126.5" font-size="12" fill="#5cd3a8">a55e46e</text>
+<text x="108.0" y="126.5" font-size="13" fill="#cdc9c1">docs: list known design inconsistencies</text>
+<text class="mono" x="752.0" y="126.5" font-size="11.5" fill="#6d6961" text-anchor="end">+6 -0</text>
+<text class="mono" x="860.0" y="126.5" font-size="11" fill="#6d6961" text-anchor="end">10 minutes ago</text>
 </g>
 <g class="row-entrance r2">
 <line x1="0" y1="188.0" x2="890" y2="188.0" stroke="#26262b" stroke-width="1"/>
